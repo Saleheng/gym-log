@@ -226,9 +226,13 @@ a{color:var(--acc)}
 .moves button:hover{border-color:var(--acc)}
 section[data-routine="mob"]{--acc:var(--magenta)}
 section[data-routine="floor"]{--acc:var(--violet)}
+section[data-routine="warm"],section[data-routine="prep"]{--acc:var(--amber)}
 .blk{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:28px 0 0;padding-bottom:8px;border-bottom:1px solid var(--line)}
 .blk h2{font:600 26px/1.1 var(--cond);margin:0;color:var(--acc)}
 .blk span{font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);text-align:right}
+.update{position:fixed;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:30;max-width:560px;margin:0 auto;display:flex;align-items:center;gap:10px;background:var(--raised);border:1px solid var(--cyan);border-radius:8px;padding:10px 14px;box-shadow:0 18px 40px -12px #000}
+.update span{flex:1;min-width:0}
+.update button{height:40px;padding:0 14px;border-radius:6px;border:0;background:var(--cyan);color:var(--ink);font:600 15px var(--cond)}
 /* session stopwatch */
 .sw{display:flex;align-items:center;gap:6px;flex:none}
 .swgo{height:44px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font:500 16px var(--mono);font-variant-numeric:tabular-nums;display:flex;align-items:center;gap:8px;transition:border-color .12s}
@@ -319,6 +323,7 @@ section[data-routine="floor"]{--acc:var(--violet)}
   <main id="main"></main>
   <input type="file" id="importfile" accept=".json,.txt,application/json,text/plain" hidden>
   <input type="file" id="photofile" accept="image/*" hidden>
+  <div class="update" id="update" hidden><span>A new version is ready.</span><button type="button" id="updatego">Update now</button></div>
 </div>
 
 <script>
@@ -376,6 +381,18 @@ var ROUTINES={
    S("mb_glute","Figure four glute stretch","Mat",1,30,"s","per side","On your back, ankle over the opposite knee, pull the bottom leg toward your chest."),
    S("mb_chest","Chest stretch on the tower","Power tower upright",1,30,"s","per side","Forearm on the upright at shoulder height, then turn your body away. Opens the front so the upper back can sit taller.")
   ]},
+ warm:{name:"Warm up",blurb:"",tip:"",
+  ex:[
+   S("wu_cardio","Skipping or light bag work","Rope or heavy bag",1,5,"min","",""),
+   S("wu_easy","Easy sets of the first two lifts","Half your working weight",1,2,"sets","","")
+  ]},
+ prep:{name:"Game warm up",blurb:"",tip:"",
+  ex:[
+   S("sw_runs","Easy jog","Pitch or footpath",1,3,"min","",""),
+   S("sw_swing","Leg swings","Hold a post or fence",1,10,"reps","per leg",""),
+   S("sw_lunge","Walking lunges","None",1,10,"reps","per leg",""),
+   S("sw_kick","Butt kicks","None",2,20,"s","","")
+  ]},
  floor:{name:"Daily",blurb:"",tip:"",
   ex:[
    S("pf_video","Pelvic floor kegels","Anywhere",2,1,"rounds","",""),
@@ -384,7 +401,7 @@ var ROUTINES={
 };
 var CUES={"pullup": "Hang with arms straight, pull your chest to the bar, lower under control. No swinging.", "inclinepress": "Shoulder blades pinned back, lower the dumbbells to chest level, press up and slightly in.", "dip": "Lean forward a little, lower until the upper arms are level with the floor, press back up.", "inclinerow": "Chest stays on the pad. Pull the elbows back toward your hips and squeeze the shoulder blades.", "lateral": "Soft elbows, raise out to the sides to shoulder height, lower slowly. Light weight, no shrug.", "inclinecurl": "Lie back with the arms hanging straight down. Curl without letting the elbows drift forward.", "kneeraise": "Curl the knees up toward your chest by rounding the lower back, then lower without swinging.", "chinup": "Palms facing you, pull until the chin clears the bar, lower all the way to straight arms.", "flatpress": "Feet planted, lower the dumbbells beside your chest, press up until the arms are straight.", "shoulderpress": "Back against the pad, press from ear height to overhead without arching the lower back.", "row1arm": "One hand and knee on the bench, back flat. Pull the dumbbell to your hip, lower fully.", "reardelt": "Hinge forward, lead with the elbows and raise out to the sides. Pause, then lower slowly.", "skull": "Upper arms stay vertical. Bend only the elbows to lower the dumbbells beside your head, then extend.", "hammer": "Palms face each other. Curl with the elbows pinned to your sides, no body swing.", "bag": "Three rounds of two minutes. Keep moving and keep your guard up between combinations.", "goblet": "Hold the weight at your chest, sit down between your heels, elbows inside the knees, drive up.", "bulgarian": "Back foot on the bench, drop the back knee straight down, push through the front heel.", "rdl": "Soft knees, push the hips back and slide the dumbbells down your thighs with a flat back, then stand tall.", "swing": "Hinge, hike the bell back between the legs, then snap the hips. The arms only guide the bell.", "calf": "Rise as high as you can, pause for a second, then lower the heels below the plate for a full stretch.", "legraise": "Hang still, raise straight legs to hip height, lower slowly. Bend the knees if you start to swing."};
 var VIDEO={"bag":"kKDHdsVN0b8&list=PLwhbxihJxPp784hfuoXusJYdJTM_ncov7","mb_book":"XmpMtdllbfQ","mb_ext":"Sfmtd1wt3JU","pf_video":"llfAgrJxUf8","abs7":"95hX_OMuIpg"};
-var MEDIA=["mb_hang","pullup", "inclinepress", "dip", "inclinerow", "lateral", "inclinecurl", "kneeraise", "chinup", "flatpress", "shoulderpress", "row1arm", "reardelt", "skull", "hammer", "goblet", "bulgarian", "rdl", "swing", "calf", "legraise", "mb_catcow", "mb_child", "mb_hipflex", "mb_ham", "mb_glute", "mb_chest"];
+var MEDIA=["wu_cardio","sw_runs","sw_swing","sw_lunge","sw_kick","mb_hang","pullup", "inclinepress", "dip", "inclinerow", "lateral", "inclinecurl", "kneeraise", "chinup", "flatpress", "shoulderpress", "row1arm", "reardelt", "skull", "hammer", "goblet", "bulgarian", "rdl", "swing", "calf", "legraise", "mb_catcow", "mb_child", "mb_hipflex", "mb_ham", "mb_glute", "mb_chest"];
 Object.keys(ROUTINES).forEach(function(k){ROUTINES[k].ex.forEach(function(ex){ex.link="";if(CUES[ex.id])ex.cue=CUES[ex.id];ex.media=MEDIA.indexOf(ex.id)>=0;ex.video=VIDEO[ex.id]||""})});
 var LIFTS=["upperA","upperB","legs"];
 var WEEK=[["Mon","Upper A","upperA"],["Tue","Soccer",""],["Wed","Rest",""],["Thu","Upper B","upperB"],["Fri","Rest or walk",""],["Sat","Legs and core","legs"],["Sun","Rest",""]];
@@ -602,9 +619,9 @@ function liftHtml(){
   var skipped=!sid&&plan[cur]&&plan[cur].moved&&!pick[cur],mob=ROUTINES.mob.ex,spine=mob.slice(0,5),hips=mob.slice(5),n=0;
   var before=soc?"Before the game":sid?"Warm up, before lifting":"Any time today",after=soc?"After the game":sid?"Cool down, after lifting":"Any time today";
   var h=nudgeHtml()+chips+blockHtml("mob",spine,n,"Spine reset",before);n+=spine.length;
-  if(soc)h+=soccerHtml();
+  if(soc){h+=blockHtml("prep",ROUTINES.prep.ex,n,"Game warm up","Right before kick off");n+=ROUTINES.prep.ex.length;h+=soccerHtml()}
   else if(skipped)h+=skippedHtml();
-  else if(sid){h+=blockHtml(sid,ROUTINES[sid].ex,n,ROUTINES[sid].name,"");n+=ROUTINES[sid].ex.length}
+  else if(sid){h+=blockHtml("warm",ROUTINES.warm.ex,n,"Warm up","Before the first lift");n+=ROUTINES.warm.ex.length;h+=blockHtml(sid,ROUTINES[sid].ex,n,ROUTINES[sid].name,"");n+=ROUTINES[sid].ex.length}
   h+=blockHtml("mob",hips,n,"Hips and hamstrings",after);n+=hips.length;
   h+=blockHtml("floor",ROUTINES.floor.ex,n,"Daily","Any time today");
   return h+(sid&&!soc?skipHtml(sid):notesHtml())}
@@ -658,10 +675,11 @@ function bodyHtml(){
 function moreHtml(){
   return '<div class="head"><div class="headrow"><h2>More</h2></div></div>'+
   '<div class="stack">'+
-   '<p class="eq mono" style="margin:0">'+(meta.lastBackup?"Last backup "+nice(iso(new Date(meta.lastBackup))):"No backup yet")+'</p>'+
+   '<p class="eq mono" style="margin:0">'+"Version "+APP_VERSION+" · "+(meta.lastBackup?"Last backup "+nice(iso(new Date(meta.lastBackup))):"No backup yet")+'</p>'+
    '<div class="panel"><h3>Your data</h3>'+
     '<div class="btns"><button type="button" class="go" id="sharebackup">Send backup to laptop</button><button type="button" class="go ghost" id="export">Save backup file</button><button type="button" class="go ghost" id="import">Restore from file</button></div>'+
     '<p class="msg'+(note&&note.bad?" bad":"")+'" id="note">'+(note?esc(note.text):"")+'</p></div>'+
+   '<div class="panel"><h3>Start training fresh</h3><p>Wipes every logged set, target, session time, note, soccer game and moved session. Body entries, photos and the Quit page are kept.</p><button type="button" class="go danger'+(armed==="wipe"?" armed":"")+'" id="wipe">'+(armed==="wipe"?"Tap again to wipe training data":"Reset training data")+'</button></div>'+
    '<div class="panel"><h3>Week</h3><dl class="sched">'+WEEK.map(function(w,i){return '<dt>'+w[0]+'</dt><dd>'+esc(w[1])+'</dd>'}).join("")+'</dl></div>'+
   '</div>'}
 /* ---------- quit page ---------- */
@@ -881,6 +899,7 @@ main.addEventListener("click",function(e){
   if(b.id==="closephoto"){viewPhoto="";armed="";render();return}
   if(b.dataset.delphoto){var pd=b.dataset.delphoto;if(armed==="p"+pd){delete photos[pd];idbDel(pd);viewPhoto="";armed=""}else armed="p"+pd;render();return}
   if(b.id==="backupnow"||b.id==="sharebackup"){doShare();return}
+  if(b.id==="wipe"){if(armed!=="wipe"){armed="wipe";render();return}armed="";logs={};targets={};targetsAt=Date.now();times={};notes={};soccer={};plan={};pick={};dirty={};saveLocal();note={text:"Training data wiped. Week 1 starts with your next logged set."};render();return}
   if(b.id==="backuplater"){meta.snooze=Date.now()+864e5;saveLocal();render();return}
   if(b.dataset.pick){pick[cur]=b.dataset.pick;render();return}
   if(b.dataset.del){var id=b.dataset.del;if(armed===id){body[id]={date:id,deleted:true,at:Date.now()};armed="";mark("body/"+id)}else armed=id;render();return}
@@ -921,7 +940,18 @@ setInterval(function(){if(document.visibilityState==="visible")main.classList.to
 
 /* ---------- boot ---------- */
 loadLocal();render();showStatus();loadPhotos();
-if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("./sw.js").catch(function(){})})}
+var APP_VERSION=13,swWaiting=null;
+function swOffer(w){swWaiting=w;$("update").hidden=false}
+$("updatego").onclick=function(){if(swWaiting)swWaiting.postMessage("skipWaiting");else location.reload()};
+if("serviceWorker" in navigator){
+  var reloaded=false,hadCtl=!!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener("controllerchange",function(){if(reloaded||!hadCtl)return;reloaded=true;location.reload()});
+  window.addEventListener("load",function(){navigator.serviceWorker.register("./sw.js").then(function(reg){
+    if(reg.waiting&&navigator.serviceWorker.controller)swOffer(reg.waiting);
+    reg.addEventListener("updatefound",function(){var w=reg.installing;if(!w)return;
+      w.addEventListener("statechange",function(){if(w.state==="installed"&&navigator.serviceWorker.controller)swOffer(w)})});
+    document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible")reg.update().catch(function(){})});
+  }).catch(function(){})})}
 })();
 </script>
 </body>
