@@ -42,7 +42,7 @@ a{color:var(--acc)}
 .bar1{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .brand{font:600 22px/1 var(--cond);letter-spacing:-.01em;margin:0;margin-right:auto}
 .brand b{color:var(--cyan);font-weight:600}
-.datenav{display:flex;align-items:center;gap:6px}
+.datenav{display:flex;align-items:center;gap:6px;flex:none}
 .datenav button{width:44px;height:44px;border-radius:6px;border:1px solid var(--line);background:var(--surface);font:500 18px var(--mono);transition:border-color .12s}
 .datenav button:hover{border-color:var(--text-dim)}
 .datenav .now{width:auto;padding:0 12px;font:500 12px var(--mono);letter-spacing:.1em;text-transform:uppercase}
@@ -172,20 +172,26 @@ a{color:var(--acc)}
 /* demo loop, centred above the sets */
 .demo{width:min(100%,380px);margin:0 auto;aspect-ratio:3/2;border-radius:8px;background-color:var(--bg);background-size:200% 100%;background-position:0 0;background-repeat:no-repeat;border:1px solid var(--line)}
 .f2 .demo{background-position:100% 0}
-.yt{width:min(100%,380px);margin:0 auto;height:96px;border-radius:8px;border:1px solid var(--acc);background:var(--bg);color:var(--acc);text-decoration:none;display:flex;align-items:center;justify-content:center;gap:12px;font:600 17px var(--cond);transition:transform .12s}
-.yt:hover{transform:translateY(-1px)}
-.yt svg{width:34px;height:34px;flex:none}
+.yt{position:relative;width:min(100%,380px);margin:0 auto;aspect-ratio:16/9;border-radius:8px;border:1px solid var(--line);background:var(--bg) center/cover no-repeat;color:var(--text);padding:0;display:grid;place-items:center;overflow:hidden}
+.yt svg{width:64px;height:64px;color:var(--acc);filter:drop-shadow(0 2px 10px #000)}
+.ytframe{width:min(100%,560px);margin:0 auto;aspect-ratio:16/9;border-radius:8px;overflow:hidden;border:1px solid var(--line);background:#000}
+.ytframe iframe{width:100%;height:100%;border:0;display:block}
+.ytopen{align-self:center;font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);padding:6px 0}
 .last{text-align:center}
 /* calendar */
-.curdate{white-space:nowrap;border:1px solid var(--line);background:var(--surface);border-radius:6px;height:44px;padding:0 12px;transition:border-color .12s}
+.datenav .curdate{flex:none;width:auto;font:500 15px var(--mono);white-space:nowrap;border:1px solid var(--line);background:var(--surface);border-radius:6px;height:44px;padding:0 12px;transition:border-color .12s}
 .curdate:hover,.curdate[aria-expanded="true"]{border-color:var(--cyan)}
-.cal{position:absolute;top:100%;right:0;z-index:10;width:min(360px,100%);background:var(--raised);border:1px solid var(--line);border-radius:8px;padding:12px;box-shadow:0 18px 40px -12px #000}
+.cal{position:absolute;top:100%;left:0;right:0;z-index:10;background:var(--raised);border:1px solid var(--line);border-radius:8px;padding:12px;box-shadow:0 18px 40px -12px #000}
 .calhead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
 .calhead b{font:600 18px var(--cond)}
 .calhead button{width:44px;height:44px;border-radius:6px;border:1px solid var(--line);background:var(--surface);font:500 18px var(--mono)}
 .calgrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
 .calgrid span{font:500 10px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);text-align:center;padding:4px 0}
-.calgrid button{position:relative;height:44px;border-radius:6px;border:1px solid transparent;background:var(--surface);font:500 15px var(--mono);font-variant-numeric:tabular-nums}
+.calgrid button{position:relative;min-height:60px;padding:6px 2px 10px;border-radius:6px;border:1px solid transparent;background:var(--surface);font:500 16px var(--mono);font-variant-numeric:tabular-nums;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0}
+.calgrid button small{font:600 12px var(--cond);color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.calgrid button small.lift{color:var(--cyan)}
+.calgrid button small.soccer{color:var(--amber)}
+.calgrid button.sel small{color:var(--ink)}
 .calgrid button:hover{border-color:var(--text-dim)}
 .calgrid button.today{color:var(--cyan);border-color:var(--cyan)}
 .calgrid button.sel{background:var(--text);color:var(--ink);border-color:var(--text)}
@@ -308,15 +314,14 @@ var ROUTINES={
    S("mb_glute","Figure four glute stretch","Mat",1,30,"s","per side","On your back, ankle over the opposite knee, pull the bottom leg toward your chest."),
    S("mb_chest","Chest stretch on the tower","Power tower upright",1,30,"s","per side","Forearm on the upright at shoulder height, then turn your body away. Opens the front so the upper back can sit taller.")
   ]},
- floor:{name:"Pelvic floor",blurb:"Two rounds a day, lying down at first, then sitting and standing once the squeeze feels clean. Expect about three months of daily work before judging results.",
-  tip:"The squeeze: draw the base of the penis in as if shortening it, as if stopping your flow mid stream, and lift the back passage up and forward. Glutes, thighs and upper abs stay loose and you keep breathing. Let go fully between reps, because the release counts as much as the squeeze. These numbers are a common starting dose. A pelvic health physio can check your technique and tell you whether your muscles need strengthening or relaxing, and that visit is worth it.",
+ floor:{name:"Daily",blurb:"",tip:"",
   ex:[
-   S("pf_slow","Slow holds","Anywhere, start lying down",2,10,"reps","","Squeeze and lift, hold 5 seconds, release for 5 seconds. Work the hold up toward 10 seconds over the coming weeks."),
-   S("pf_quick","Quick squeezes","Anywhere",2,10,"reps","","Squeeze hard and fast, then let go completely. One second on, one second off.")
+   S("pf_video","Pelvic floor kegels","Anywhere",2,1,"rounds","",""),
+   S("abs7","7 minute ab workout","Mat",1,7,"min","","")
   ]}
 };
 var CUES={"pullup": "Hang with arms straight, pull your chest to the bar, lower under control. No swinging.", "inclinepress": "Shoulder blades pinned back, lower the dumbbells to chest level, press up and slightly in.", "dip": "Lean forward a little, lower until the upper arms are level with the floor, press back up.", "inclinerow": "Chest stays on the pad. Pull the elbows back toward your hips and squeeze the shoulder blades.", "lateral": "Soft elbows, raise out to the sides to shoulder height, lower slowly. Light weight, no shrug.", "inclinecurl": "Lie back with the arms hanging straight down. Curl without letting the elbows drift forward.", "kneeraise": "Curl the knees up toward your chest by rounding the lower back, then lower without swinging.", "chinup": "Palms facing you, pull until the chin clears the bar, lower all the way to straight arms.", "flatpress": "Feet planted, lower the dumbbells beside your chest, press up until the arms are straight.", "shoulderpress": "Back against the pad, press from ear height to overhead without arching the lower back.", "row1arm": "One hand and knee on the bench, back flat. Pull the dumbbell to your hip, lower fully.", "reardelt": "Hinge forward, lead with the elbows and raise out to the sides. Pause, then lower slowly.", "skull": "Upper arms stay vertical. Bend only the elbows to lower the dumbbells beside your head, then extend.", "hammer": "Palms face each other. Curl with the elbows pinned to your sides, no body swing.", "bag": "Three rounds of two minutes. Keep moving and keep your guard up between combinations.", "goblet": "Hold the weight at your chest, sit down between your heels, elbows inside the knees, drive up.", "bulgarian": "Back foot on the bench, drop the back knee straight down, push through the front heel.", "rdl": "Soft knees, push the hips back and slide the dumbbells down your thighs with a flat back, then stand tall.", "swing": "Hinge, hike the bell back between the legs, then snap the hips. The arms only guide the bell.", "calf": "Rise as high as you can, pause for a second, then lower the heels below the plate for a full stretch.", "legraise": "Hang still, raise straight legs to hip height, lower slowly. Bend the knees if you start to swing."};
-var VIDEO={"mb_book":"watch?v=rDviWORCWEw","mb_ext":"watch?v=VAzl0iFn_rk","pf_slow":"watch?v=MJ7EfGu03-0","pf_quick":"watch?v=MJ7EfGu03-0","bag":"results?search_query=heavy+bag+workout+for+beginners"};
+var VIDEO={"bag":"kKDHdsVN0b8&list=PLwhbxihJxPp784hfuoXusJYdJTM_ncov7","mb_book":"XmpMtdllbfQ","mb_ext":"Sfmtd1wt3JU","pf_video":"llfAgrJxUf8","abs7":"95hX_OMuIpg"};
 var MEDIA=["mb_hang","pullup", "inclinepress", "dip", "inclinerow", "lateral", "inclinecurl", "kneeraise", "chinup", "flatpress", "shoulderpress", "row1arm", "reardelt", "skull", "hammer", "goblet", "bulgarian", "rdl", "swing", "calf", "legraise", "mb_catcow", "mb_child", "mb_hipflex", "mb_ham", "mb_glute", "mb_chest"];
 Object.keys(ROUTINES).forEach(function(k){ROUTINES[k].ex.forEach(function(ex){ex.link="";if(CUES[ex.id])ex.cue=CUES[ex.id];ex.media=MEDIA.indexOf(ex.id)>=0;ex.video=VIDEO[ex.id]||""})});
 var LIFTS=["upperA","upperB","legs"];
@@ -433,11 +438,14 @@ function setRow(ex,s,i){
    '<input class="a" id="'+id+'_a" type="number" inputmode="numeric" min="0" placeholder="0" aria-label="Actual, set '+(i+1)+'" value="'+(s.a!=null?s.a:"")+'">'+
    '<button type="button" data-d="1" aria-label="One more">+</button></div>'+
    (ex.kg?'<input class="w" id="'+id+'_w" type="number" inputmode="decimal" min="0" step="0.5" placeholder="kg" aria-label="Weight in kg, set '+(i+1)+'" value="'+(s.w!=null?s.w:"")+'">':"")+'</div>'}
+function ytTile(ex){var id=ex.video.split("&")[0];
+  return '<button type="button" class="yt" data-play="'+ex.video+'" aria-label="Play the '+esc(ex.name)+' video" style="background-image:url(https://i.ytimg.com/vi/'+id+'/hqdefault.jpg)"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="currentColor"/><path d="M10 7.5v9l7-4.5z" fill="var(--ink)"/></svg></button>'+
+   '<a class="ytopen" href="https://www.youtube.com/watch?v='+ex.video+'" target="_blank" rel="noopener">Open in YouTube</a>'}
 function footHtml(ex,sets){var x=tally(sets);
   return '<div class="meter'+(x.a<x.t?" short":"")+'"><i style="width:'+(x.t?Math.round(100*x.a/x.t):0)+'%"></i></div><span>'+x.a+" / "+x.t+" "+ex.unit+'</span>'}
 function card(ex,sid,n,nx){
   var sets=viewSets(ex,sid,cur),prev=prevSets(ex,sid,cur),done=tally(sets).full===sets.length;
-  var goal=ex.sets+" × "+(ex.lo===ex.hi?ex.lo:ex.lo+" to "+ex.hi)+(ex.unit==="s"?" s":"")+(ex.side?" "+ex.side:"");
+  var goal=ex.sets+" × "+(ex.lo===ex.hi?ex.lo:ex.lo+" to "+ex.hi)+(ex.unit==="reps"?"":" "+ex.unit)+(ex.side?" "+ex.side:"");
   var last="";
   if(prev){var ws=prev.map(function(s){return s.w}).filter(function(w){return w!=null});
     last='<p class="last">Last time '+prev.map(function(s){return s.a==null?"0":s.a}).join(" ")+(ws.length?" at "+Math.max.apply(null,ws)+" kg":"")+'</p>'}
@@ -445,7 +453,7 @@ function card(ex,sid,n,nx){
    '<article class="ex'+(ex.kg?"":" nokg")+(done?" done":"")+(nx===ex.id?" next":"")+'" data-ex="'+ex.id+'" data-sid="'+sid+'" data-n="'+pad(n)+'">'+
    '<div class="exhead"><div class="badge">'+(done?"&#10003;":pad(n))+'</div><div class="extitle"><div class="exh"><h3>'+esc(ex.name)+'</h3></div>'+
    '<div class="meta"><span class="goal">'+goal+'</span><span class="tag up">Up next</span>'+(ex.opt?'<span class="tag">Optional</span>':"")+'<span class="eq">'+esc(ex.eq)+'</span></div></div></div>'+
-   '<div class="exbody">'+(ex.media?'<div class="demo" role="img" aria-label="'+esc(ex.name)+' demonstration" style="background-image:url(media/'+ex.id+'.jpg)"></div>':ex.video?'<a class="yt" href="https://www.youtube.com/'+ex.video+'" data-yt="'+ex.video+'" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="currentColor"/><path d="M10 7.5v9l7-4.5z" fill="var(--bg)"/></svg>Watch on YouTube</a>':"")+last+
+   '<div class="exbody">'+(ex.media?'<div class="demo" role="img" aria-label="'+esc(ex.name)+' demonstration" style="background-image:url(media/'+ex.id+'.jpg)"></div>':ex.video?ytTile(ex):"")+last+
    '<div class="sets"><div class="sethead"><span>Set</span><span class="ht">Target</span><span>Actual</span>'+(ex.kg?"<span>kg</span>":"")+'</div>'+
    sets.map(function(s,i){return setRow(ex,s,i)}).join("")+'</div>'+
    '<div class="foot">'+footHtml(ex,sets)+'</div></div></article>'}
@@ -600,7 +608,8 @@ function calRender(){
   var h='<div class="calhead"><button type="button" data-cal="-1" aria-label="Previous month">&lsaquo;</button><b>'+MONTHS[m]+" "+y+'</b><button type="button" data-cal="1" aria-label="Next month">&rsaquo;</button></div><div class="calgrid">';
   ["M","T","W","T","F","S","S"].forEach(function(d){h+="<span>"+d+"</span>"});
   for(var i=0;i<lead;i++)h+="<i></i>";
-  for(var d=1;d<=days;d++){var ds=y+"-"+pad(m+1)+"-"+pad(d);h+='<button type="button" data-date="'+ds+'" class="'+(ds===cur?"sel ":"")+(ds===today?"today ":"")+(has[ds]?"has":"")+'">'+d+'</button>'}
+  for(var d=1;d<=days;d++){var ds=y+"-"+pad(m+1)+"-"+pad(d);var sid=liftFor(ds),wk=WEEK[dow(ds)][1],lab=sid?(sid==="legs"?"Legs":ROUTINES[sid].name):(wk==="Soccer"?"Soccer":"Rest");
+    h+='<button type="button" data-date="'+ds+'" class="'+(ds===cur?"sel ":"")+(ds===today?"today ":"")+(has[ds]?"has":"")+'">'+d+'<small class="'+(sid?"lift":lab==="Soccer"?"soccer":"")+'">'+lab+'</small></button>'}
   el.innerHTML=h+"</div>"}
 function calToggle(open){calOpen=open;if(open)calMonth=cur.slice(0,7);calRender()}
 $("curdate").onclick=function(e){e.stopPropagation();calToggle(!calOpen)};
@@ -653,9 +662,10 @@ function doImport(file){
 main.addEventListener("input",function(e){var inp=e.target,row=inp.closest&&inp.closest(".set");if(!row)return;
   commit(row,inp.classList.contains("t")?"t":inp.classList.contains("a")?"a":"w",num(inp.value))});
 main.addEventListener("click",function(e){
-  var y=e.target.closest("a.yt");
-  if(y&&/Android/i.test(navigator.userAgent)){e.preventDefault();var web="https://www.youtube.com/"+y.dataset.yt;
-    location.href="intent://www.youtube.com/"+y.dataset.yt+"#Intent;scheme=https;package=com.google.android.youtube;S.browser_fallback_url="+encodeURIComponent(web)+";end";return}
+  var pl=e.target.closest("button.yt");
+  if(pl){var v=pl.dataset.play,box=document.createElement("div");box.className="ytframe";
+    box.innerHTML='<iframe src="https://www.youtube-nocookie.com/embed/'+v.replace("&","?")+(v.indexOf("&")>=0?"&":"?")+'autoplay=1&playsinline=1&rel=0" title="Exercise video" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>';
+    pl.replaceWith(box);return}
   var b=e.target.closest("button");if(!b)return;
   if(b.dataset.d){var row=b.closest(".set"),a=row.querySelector(".a"),t=num(row.querySelector(".t").value)||0,d=+b.dataset.d;
     var cardEl=row.closest(".ex"),ex=findEx(cardEl.dataset.sid,cardEl.dataset.ex),stp=ex.unit==="s"?5:1,v=num(a.value);
