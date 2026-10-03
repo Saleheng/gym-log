@@ -7,3 +7,5 @@ Files: `index.html` (the whole app), `manifest.webmanifest`, `sw.js` (offline ca
 All data stays in the browser storage of the device that runs it. Nothing is stored in this repo.
 
 To ship an update: replace `index.html`, bump `VERSION` in `sw.js`, push.
+
+Exercise photos in `media/` come from [free-exercise-db](https://github.com/yuhonas/free-exercise-db), released into the public domain under the Unlicense.

@@ -36,6 +36,7 @@ a{color:var(--acc)}
 [data-acc="mob"]{--acc:var(--magenta)}
 [data-acc="body"]{--acc:var(--violet)}
 [data-acc="more"]{--acc:var(--amber)}
+[data-acc="quit"]{--acc:var(--lime)}
 
 .top{position:sticky;top:0;z-index:5;background:var(--bg);padding-block:12px 10px;display:flex;flex-direction:column;gap:10px}
 .bar1{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
@@ -73,6 +74,7 @@ a{color:var(--acc)}
 .tabs button[data-tab="mob"]{--acc:var(--magenta)}
 .tabs button[data-tab="body"]{--acc:var(--violet)}
 .tabs button[data-tab="more"]{--acc:var(--amber)}
+.tabs button[data-tab="quit"]{--acc:var(--lime)}
 .tabs button[aria-selected="true"]{background:var(--acc);border-color:var(--acc);color:var(--ink)}
 .pick{padding-top:12px}
 .pick button{height:44px;font-size:15px}
@@ -165,7 +167,43 @@ a{color:var(--acc)}
 .sched dt{font:500 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--text-dim);padding-top:2px}
 .sched dd{margin:0}
 
+/* demo loop beside the sets */
+.exbody.hasdemo{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:14px;align-items:start}
+.exmain{display:flex;flex-direction:column;gap:8px;min-width:0;grid-row:1;grid-column:1}
+.exside{display:flex;flex-direction:column;gap:8px;min-width:0}
+.hasdemo .exside{grid-row:1;grid-column:2}
+.demo{width:100%;aspect-ratio:3/2;border-radius:8px;background-color:var(--bg);background-size:200% 100%;background-position:0 0;background-repeat:no-repeat;animation:flip 2.2s steps(1) infinite;border:1px solid var(--line)}
+@keyframes flip{0%{background-position:0 0}50%{background-position:100% 0}}
+.hasdemo .cue{font-size:13.5px;color:var(--text-dim)}
+@media (max-width:760px){
+  .exbody.hasdemo{display:flex;flex-direction:column}
+  .hasdemo .exside{order:-1;flex-direction:row;align-items:center;gap:12px}
+  .hasdemo .demo{width:46%;flex:none}
+}
+/* quit page */
+.qhero{text-align:center;padding:26px 16px;border:1px solid var(--lime);box-shadow:0 0 0 1px var(--lime),0 0 18px -4px var(--lime)}
+.qclock{font:500 clamp(30px,8vw,58px)/1.1 var(--mono);font-variant-numeric:tabular-nums;color:var(--lime);margin:8px 0}
+.qstats b{color:var(--lime)}
+.crave{border:1px dashed var(--magenta)}
+.crave h3{color:var(--magenta)}
+.crave .go{background:var(--magenta)}
+.crave .go.ghost{background:transparent;border-color:var(--line);color:var(--text)}
+.cclock{font:500 clamp(40px,11vw,76px)/1 var(--mono);font-variant-numeric:tabular-nums;color:var(--magenta);text-align:center;margin:6px 0 10px}
+.ctip{text-align:center;font:600 20px/1.3 var(--cond);margin:0 auto 14px;max-width:30ch;text-wrap:balance}
+.btn3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.goalbar{height:18px;border-radius:999px;background:var(--bg);overflow:hidden;margin:10px 0}
+.goalbar i{display:block;height:100%;border-radius:999px;background:var(--amber);transition:width .3s}
+.miles{display:flex;flex-direction:column;gap:12px}
+.mile{display:grid;grid-template-columns:44px minmax(0,1fr);gap:4px 12px;align-items:center}
+.mile .mk{grid-row:1/3;width:44px;height:44px;border-radius:8px;display:grid;place-items:center;background:var(--bg);font:500 12px var(--mono);color:var(--text-dim)}
+.mile.done .mk{background:var(--lime);color:var(--ink);font-size:18px}
+.mile .mt{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline}
+.mile .mt b{font:500 13px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--text-dim)}
+.mile.done .mt b{color:var(--lime)}
+.mile .meter{height:5px;background:var(--bg)}
+.linkbtn{background:none;border:0;padding:8px 0;color:var(--text-dim);font:500 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;text-decoration:underline}
 @media (max-width:560px){
+  .btn3{grid-template-columns:1fr}
   .day{padding:6px 5px}
   .day .d2,.dots{display:none}
   .day .d1{flex-direction:column;align-items:center;gap:1px}
@@ -179,7 +217,7 @@ a{color:var(--acc)}
   .step{grid-template-columns:44px minmax(0,1fr) 44px;gap:4px}
   .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}.demo{animation:none}}
 </style>
 </head>
 <body>
@@ -266,17 +304,20 @@ var ROUTINES={
    S("pf_quick","Quick squeezes","Anywhere",2,10,"reps","","Squeeze hard and fast, then let go completely. One second on, one second off.")
   ]}
 };
-ROUTINES.floor.ex[0].link=yt("pelvic floor exercises for men");ROUTINES.floor.ex[1].link="";
+var CUES={"pullup": "Hang with arms straight, pull your chest to the bar, lower under control. No swinging.", "inclinepress": "Shoulder blades pinned back, lower the dumbbells to chest level, press up and slightly in.", "dip": "Lean forward a little, lower until the upper arms are level with the floor, press back up.", "inclinerow": "Chest stays on the pad. Pull the elbows back toward your hips and squeeze the shoulder blades.", "lateral": "Soft elbows, raise out to the sides to shoulder height, lower slowly. Light weight, no shrug.", "inclinecurl": "Lie back with the arms hanging straight down. Curl without letting the elbows drift forward.", "kneeraise": "Curl the knees up toward your chest by rounding the lower back, then lower without swinging.", "chinup": "Palms facing you, pull until the chin clears the bar, lower all the way to straight arms.", "flatpress": "Feet planted, lower the dumbbells beside your chest, press up until the arms are straight.", "shoulderpress": "Back against the pad, press from ear height to overhead without arching the lower back.", "row1arm": "One hand and knee on the bench, back flat. Pull the dumbbell to your hip, lower fully.", "reardelt": "Hinge forward, lead with the elbows and raise out to the sides. Pause, then lower slowly.", "skull": "Upper arms stay vertical. Bend only the elbows to lower the dumbbells beside your head, then extend.", "hammer": "Palms face each other. Curl with the elbows pinned to your sides, no body swing.", "bag": "Three rounds of two minutes. Keep moving and keep your guard up between combinations.", "goblet": "Hold the weight at your chest, sit down between your heels, elbows inside the knees, drive up.", "bulgarian": "Back foot on the bench, drop the back knee straight down, push through the front heel.", "rdl": "Soft knees, push the hips back and slide the dumbbells down your thighs with a flat back, then stand tall.", "swing": "Hinge, hike the bell back between the legs, then snap the hips. The arms only guide the bell.", "calf": "Rise as high as you can, pause for a second, then lower the heels below the plate for a full stretch.", "legraise": "Hang still, raise straight legs to hip height, lower slowly. Bend the knees if you start to swing."};
+var MEDIA=["pullup", "inclinepress", "dip", "inclinerow", "lateral", "inclinecurl", "kneeraise", "chinup", "flatpress", "shoulderpress", "row1arm", "reardelt", "skull", "hammer", "goblet", "bulgarian", "rdl", "swing", "calf", "legraise", "mb_catcow", "mb_child", "mb_hipflex", "mb_ham", "mb_glute", "mb_chest"];
+Object.keys(ROUTINES).forEach(function(k){ROUTINES[k].ex.forEach(function(ex){ex.link="";if(CUES[ex.id])ex.cue=CUES[ex.id];ex.media=MEDIA.indexOf(ex.id)>=0})});
 var LIFTS=["upperA","upperB","legs"];
 var WEEK=[["Mon","Upper A","upperA"],["Tue","Soccer",""],["Wed","Rest",""],["Thu","Upper B","upperB"],["Fri","Rest or walk",""],["Sat","Legs and core","legs"],["Sun","Rest",""]];
 var DAYNAME=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
 var MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-var TABS=[["lift","Lift"],["mob","Mobility"],["body","Body"],["more","More"]];
+var TABS=[["lift","Lift"],["mob","Mobility"],["body","Body"],["quit","Quit"],["more","More"]];
 
 /* ---------- state ---------- */
 var logs={},body={},targets={},targetsAt=0,dirty={},pick={};
 var db=null,dl=null,flushing=false,timer=null,armed="",localOk=true,cloud="none",note=null;
 var cur=iso(new Date()),tab="lift";
+var quit={start:"",perDay:null,packPrice:null,packSize:20,goalName:"",goalCost:null,at:0},qlog=[],qEdit=false,crave=0,quitInt=null,tipIx=0,qMsg="";
 var $=function(id){return document.getElementById(id)};
 var main=$("main");
 
@@ -292,9 +333,9 @@ function key(date,sid){return date+"_"+sid}
 
 /* ---------- storage: this tablet first, online copy second ---------- */
 var LS="hgl2";
-function snapshot(){return {logs:logs,body:body,targets:targets,targetsAt:targetsAt,dirty:Object.keys(dirty)}}
+function snapshot(){return {logs:logs,body:body,targets:targets,targetsAt:targetsAt,quit:quit,qlog:qlog,dirty:Object.keys(dirty)}}
 function saveLocal(){try{localStorage.setItem(LS,JSON.stringify(snapshot()));localOk=true}catch(e){localOk=false}showStatus()}
-function loadLocal(){try{var s=JSON.parse(localStorage.getItem(LS)||"null");if(s){logs=s.logs||{};body=s.body||{};targets=s.targets||{};targetsAt=s.targetsAt||0;(s.dirty||[]).forEach(function(p){dirty[p]=1})}}catch(e){localOk=false}}
+function loadLocal(){try{var s=JSON.parse(localStorage.getItem(LS)||"null");if(s){logs=s.logs||{};body=s.body||{};targets=s.targets||{};targetsAt=s.targetsAt||0;if(s.quit)quit=s.quit;if(s.qlog)qlog=s.qlog;(s.dirty||[]).forEach(function(p){dirty[p]=1})}}catch(e){localOk=false}}
 function showStatus(){var el=$("status"),t,c="chip";
   if(cloud==="saving")t="Saving";
   else if(cloud==="ok"){t=localOk?"Saved and backed up":"Backed up online";c+=" ok"}
@@ -396,12 +437,12 @@ function card(ex,sid,n,nx){
   return (ex.grp?'<div class="grp"><h3>'+esc(ex.grp[0])+'</h3><span>'+esc(ex.grp[1])+'</span></div>':"")+
    '<article class="ex'+(ex.kg?"":" nokg")+(done?" done":"")+(nx===ex.id?" next":"")+'" data-ex="'+ex.id+'" data-sid="'+sid+'" data-n="'+pad(n)+'">'+
    '<div class="badge">'+(done?"&#10003;":pad(n))+'</div>'+
-   '<div class="exh"><h3>'+esc(ex.name)+'</h3>'+(ex.link?'<a href="'+ex.link+'" target="_blank" rel="noopener">Demo</a>':"")+'</div>'+
+   '<div class="exh"><h3>'+esc(ex.name)+'</h3>'+'</div>'+
    '<div class="meta"><span class="goal">'+goal+'</span><span class="tag up">Up next</span>'+(ex.opt?'<span class="tag">Optional</span>':"")+'<span class="eq">'+esc(ex.eq)+'</span></div>'+
-   '<div class="exbody">'+(ex.cue?'<p class="cue">'+esc(ex.cue)+'</p>':"")+last+
+   '<div class="exbody'+(ex.media?" hasdemo":"")+'"><div class="exside">'+(ex.media?'<div class="demo" role="img" aria-label="'+esc(ex.name)+' demonstration" style="background-image:url(media/'+ex.id+'.jpg)"></div>':"")+(ex.cue?'<p class="cue">'+esc(ex.cue)+'</p>':"")+'</div><div class="exmain">'+last+
    '<div class="sets"><div class="sethead"><span>Set</span><span class="ht">Target</span><span>Actual</span>'+(ex.kg?"<span>kg</span>":"")+'</div>'+
    sets.map(function(s,i){return setRow(ex,s,i)}).join("")+'</div>'+
-   '<div class="foot">'+footHtml(ex,sets)+'</div></div></article>'}
+   '<div class="foot">'+footHtml(ex,sets)+'</div></div></div></article>'}
 function routineHtml(sid){
   var r=ROUTINES[sid],p=progress(cur,sid),nx=nextUp(sid,cur);
   return '<section data-routine="'+sid+'"><div class="head"><div class="headrow"><h2>'+esc(r.name)+'</h2><span class="total"><span class="pct">'+p.pct+'</span>% <small>of target</small></span></div>'+
@@ -480,9 +521,91 @@ function moreHtml(){
     '<li>Every sixth week, cut all sets in half and keep the weights the same.</li>'+
     '<li>Stretches progress by depth and ease, not by longer holds.</li></ul></div>'+
   '</div>'}
+/* ---------- quit page ---------- */
+var MILES=[[20*60e3,"20 min","20 minutes","Heart rate and blood pressure drop."],[12*3600e3,"12 h","12 hours","Carbon monoxide in your blood drops to normal."],[14*864e5,"2 wk","2 to 12 weeks","Circulation improves and lung function increases."],[30*864e5,"1 mo","1 to 9 months","Coughing and shortness of breath decrease."],[365*864e5,"1 yr","1 year","Risk of coronary heart disease is about half that of a smoker."],[5*365*864e5,"5 yr","5 years","Stroke risk falls to that of a non smoker, 5 to 15 years after quitting."],[10*365*864e5,"10 yr","10 years","Lung cancer risk falls to about half that of a smoker."],[15*365*864e5,"15 yr","15 years","Risk of coronary heart disease matches a non smoker."]];
+var TIPS=["Drink a full glass of water, slowly.","Ten slow breaths. In for 4, out for 6.","Hang from the pull up bar for 20 seconds.","Drop and do one set of push ups.","Walk outside for five minutes. Leave the lighter behind.","Brush your teeth. Smoke tastes worse on a clean mouth.","Grab a kettlebell and do 15 swings.","Two minutes on the heavy bag. Hit it like it owes you money."];
+function money(v){return "$"+v.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,",")}
+function dur(ms){var t=Math.max(0,Math.floor(ms/1000)),d=Math.floor(t/86400),h=Math.floor(t%86400/3600),m=Math.floor(t%3600/60);return (d?d+"d ":"")+pad(h)+"h "+pad(m)+"m "+pad(t%60)+"s"}
+function qStats(now){
+  if(!quit.start||!quit.perDay)return null;
+  var s=new Date(quit.start).getTime();if(!isFinite(s))return null;
+  var slips=0,lastSlip=0,won=0;
+  qlog.forEach(function(e){if(e.t<s)return;if(e.type==="slip"){slips+=e.n||1;lastSlip=Math.max(lastSlip,e.t)}else won++});
+  var el=Math.max(0,now-s),per=quit.packPrice&&quit.packSize?quit.packPrice/quit.packSize:0;
+  var avoided=Math.max(0,el/864e5*quit.perDay-slips);
+  return {s:s,el:el,future:now<s,streak:now-Math.max(s,lastSlip),avoided:avoided,saved:avoided*per,daily:quit.perDay*per,slips:slips,won:won}}
+function localStamp(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())+"T"+pad(d.getHours())+":"+pad(d.getMinutes())}
+function qSetupHtml(st){
+  var v=function(x){return x==null?"":x};
+  return '<form class="panel" id="quitform"><h3>'+(st?"Your quit details":"Set your quit day")+'</h3>'+
+   (st?"":'<p>Tell the log when you stop and what smoking costs you. It does the counting from there, down to the second and the cent.</p>')+
+   '<div class="form">'+
+   '<label class="full"><span class="lbl">Quit date and time</span><input id="q_start" type="datetime-local" required value="'+esc(quit.start||localStamp(new Date()))+'"></label>'+
+   '<label><span class="lbl">Cigarettes per day</span><input id="q_perday" type="number" inputmode="decimal" min="1" step="1" required placeholder="0" value="'+v(quit.perDay)+'"></label>'+
+   '<label><span class="lbl">Price of a pack, $</span><input id="q_price" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" value="'+v(quit.packPrice)+'"></label>'+
+   '<label><span class="lbl">Cigarettes in a pack</span><input id="q_size" type="number" inputmode="numeric" min="1" step="1" value="'+v(quit.packSize||20)+'"></label>'+
+   '<label><span class="lbl">Reward price, $</span><input id="q_goalcost" type="number" inputmode="decimal" min="0" step="1" placeholder="0" value="'+v(quit.goalCost)+'"></label>'+
+   '<label class="full"><span class="lbl">Reward you are saving for</span><input id="q_goal" type="text" maxlength="60" placeholder="Something you actually want" value="'+esc(quit.goalName||"")+'"></label>'+
+   '<button class="go full" type="submit">'+(st?"Save details":"Start counting")+'</button></div></form>'}
+function craveHtml(){
+  if(!crave)return '<div class="panel crave"><h3>Craving right now?</h3><p>A craving usually passes in a few minutes. Start the clock, do the thing it tells you, and let it pass.</p>'+
+    '<div class="btns"><button type="button" class="go" data-q="crave">Start the 3 minute clock</button><button type="button" class="go ghost" data-q="slip">I smoked one</button></div>'+
+    '<p class="msg" id="q_msg">'+esc(qMsg)+'</p>'+(qlog.length?'<button type="button" class="linkbtn" data-q="undo">Undo last entry</button>':"")+'</div>';
+  return '<div class="panel crave"><h3>Ride it out</h3><div class="cclock" id="q_crave"></div><p class="ctip" id="q_tip">'+esc(TIPS[tipIx%TIPS.length])+'</p>'+
+    '<div class="btn3"><button type="button" class="go" data-q="won">Beat it</button><button type="button" class="go ghost" data-q="tip">Another idea</button><button type="button" class="go ghost" data-q="slip">I smoked one</button></div></div>'}
+function quitHtml(){
+  var now=Date.now(),st=qStats(now);
+  var head='<div class="head"><div class="headrow"><h2>Smoke free</h2></div><p>Every hour off cigarettes is paid back in breath, in lifts and in dollars. This page keeps the score.</p></div>';
+  if(!st||qEdit)return head+'<div class="stack">'+qSetupHtml(st)+(st?'<button type="button" class="linkbtn" data-q="cancel">Cancel</button>':"")+'</div>';
+  var d=new Date(quit.start),when=nice(iso(d))+" at "+pad(d.getHours())+":"+pad(d.getMinutes());
+  if(st.future)return head+'<div class="stack"><div class="panel qhero"><span class="lbl">Quit day starts in</span><div class="qclock" id="q_clock"></div><p class="eq" style="margin:0">'+when+'. Use the time to clear out lighters, ashtrays and the emergency pack.</p></div>'+
+    '<button type="button" class="linkbtn" data-q="edit">Change quit details</button></div>';
+  var goal="";
+  if(quit.goalCost){var left=quit.goalCost-st.saved,eta="";
+    if(left>0&&st.daily>0){var e=new Date(now+left/st.daily*864e5);eta=" On track for "+nice(iso(e))+"."}
+    goal='<div class="panel"><h3>'+esc(quit.goalName||"Your reward")+'</h3><div class="goalbar"><i id="q_goalbar" style="width:'+Math.min(100,st.saved/quit.goalCost*100).toFixed(1)+'%"></i></div>'+
+      '<p class="mono" style="margin:0"><span id="q_goaltxt">'+money(Math.min(st.saved,quit.goalCost))+'</span> of '+money(quit.goalCost)+(left<=0?". Paid for. Go and buy it.":"."+eta)+'</p></div>'}
+  else goal='<div class="panel"><h3>Pick a reward</h3><p style="margin:0">Name something you want and its price in your quit details, and watch the cigarettes you skip pay for it.</p></div>';
+  var miles=MILES.map(function(m){var p=Math.min(100,st.el/m[0]*100),done=p>=100;
+    return '<div class="mile'+(done?" done":"")+'"><div class="mk">'+(done?"&#10003;":m[1])+'</div><div class="mt"><b>'+m[2]+'</b><span>'+m[3]+'</span></div><div class="meter"><i style="width:'+p.toFixed(1)+'%"></i></div></div>'}).join("");
+  return head+'<div class="stack">'+
+   '<div class="panel qhero"><span class="lbl">Smoke free for</span><div class="qclock" id="q_clock"></div><p class="eq" style="margin:0">Quit on '+when+(st.slips?". Streak restarted after your last slip.":"")+'</p></div>'+
+   '<div class="panel"><div class="stats qstats">'+
+    '<div class="stat"><span class="lbl">Money saved</span><b id="q_money"></b></div>'+
+    '<div class="stat"><span class="lbl">Not smoked</span><b id="q_cigs"></b></div>'+
+    '<div class="stat"><span class="lbl">Cravings beaten</span><b>'+st.won+'</b></div>'+
+    '<div class="stat"><span class="lbl">Slips</span><b>'+st.slips+'</b></div></div>'+
+    (st.daily?'<p class="eq" style="margin:12px 0 0">Staying quit is worth <span class="mono">'+money(st.daily*7)+'</span> a week, <span class="mono">'+money(st.daily*30)+'</span> a month and <span class="mono">'+money(st.daily*365)+'</span> a year.</p>':"")+'</div>'+
+   craveHtml()+goal+
+   '<div class="panel"><h3>What your body is doing</h3><div class="miles">'+miles+'</div><p class="eq" style="margin:14px 0 0">Timeline from the World Health Organization fact sheet on quitting tobacco, counted from your quit date.</p></div>'+
+   '<div class="panel"><h3>Backup</h3><p style="margin:0">Quitline is free and confidential on <span class="mono">13 7848</span>. A GP or pharmacist can set you up with patches, gum or other quitting medicines, which take the edge off cravings.</p></div>'+
+   '<button type="button" class="linkbtn" data-q="edit">Change quit details</button></div>'}
+function qTick(){
+  var now=Date.now(),st=qStats(now),el=$("q_clock");
+  if(st&&el)el.textContent=dur(st.future?st.s-now:st.streak);
+  if(st&&$("q_money")){$("q_money").textContent=money(st.saved);$("q_cigs").textContent=Math.floor(st.avoided)}
+  if(st&&$("q_goalbar")&&quit.goalCost){$("q_goalbar").style.width=Math.min(100,st.saved/quit.goalCost*100).toFixed(1)+"%";$("q_goaltxt").textContent=money(Math.min(st.saved,quit.goalCost))}
+  var c=$("q_crave");
+  if(c){var left=Math.ceil((crave-now)/1000);c.textContent=left>0?Math.floor(left/60)+":"+pad(left%60):"0:00";
+    if(left<=0)$("q_tip").textContent="Three minutes done. If it is still there, go again. It will fade."}}
+function qAction(a){
+  var now=Date.now();
+  if(a==="edit"){qEdit=true}
+  else if(a==="cancel"){qEdit=false}
+  else if(a==="crave"){crave=now+180000;tipIx=Math.floor(Math.random()*TIPS.length);qMsg=""}
+  else if(a==="tip"){tipIx++;$("q_tip").textContent=TIPS[tipIx%TIPS.length];return}
+  else if(a==="won"){qlog.push({t:now,type:"won"});crave=0;qMsg="Craving beaten and logged. That is one more it does not get."}
+  else if(a==="slip"){qlog.push({t:now,type:"slip",n:1});crave=0;qMsg="Logged. One slip is not a relapse. The streak restarts now and everything you skipped still counts."}
+  else if(a==="undo"){qlog.pop();qMsg="Last entry removed."}
+  quit.at=now;saveLocal();render()}
+function qSave(){
+  var start=$("q_start").value,per=num($("q_perday").value);if(!start||!per)return;
+  quit={start:start,perDay:per,packPrice:num($("q_price").value),packSize:num($("q_size").value)||20,goalName:$("q_goal").value.trim(),goalCost:num($("q_goalcost").value),at:Date.now()};
+  qEdit=false;saveLocal();render()}
 function render(){
   renderTop();main.dataset.acc=tab;
-  main.innerHTML=tab==="lift"?liftHtml():tab==="mob"?routineHtml("mob")+routineHtml("floor"):tab==="body"?bodyHtml():moreHtml()}
+  main.innerHTML=tab==="lift"?liftHtml():tab==="mob"?routineHtml("mob")+routineHtml("floor"):tab==="body"?bodyHtml():tab==="quit"?quitHtml():moreHtml();
+  clearInterval(quitInt);quitInt=null;if(tab==="quit"){quitInt=setInterval(qTick,1000);qTick()}}
 
 /* ---------- interaction ---------- */
 function findEx(sid,id){var a=ROUTINES[sid].ex;for(var i=0;i<a.length;i++)if(a[i].id===id)return a[i]}
@@ -506,7 +629,7 @@ function commit(row,field,val){
 function say(text,bad){note={text:text,bad:!!bad};var el=$("note");if(el){el.textContent=text;el.className="msg"+(bad?" bad":"")}}
 function doExport(){
   try{
-    var data=JSON.stringify({app:"home-gym-log",v:1,exported:new Date().toISOString(),logs:logs,body:body,targets:targets,targetsAt:targetsAt},null,1);
+    var data=JSON.stringify({app:"home-gym-log",v:1,exported:new Date().toISOString(),logs:logs,body:body,targets:targets,targetsAt:targetsAt,quit:quit,qlog:qlog},null,1);
     var url=URL.createObjectURL(new Blob([data],{type:"application/json"})),a=document.createElement("a");
     a.href=url;a.download="home-gym-log-"+iso(new Date())+".json";document.body.appendChild(a);a.click();a.remove();
     setTimeout(function(){URL.revokeObjectURL(url)},4000);
@@ -519,6 +642,7 @@ function doImport(file){
       for(id in d.logs||{}){if(!logs[id]||(d.logs[id].at||0)>(logs[id].at||0)){logs[id]=d.logs[id];dirty["logs/"+id]=1;n++}}
       for(id in d.body||{}){if(!body[id]||(d.body[id].at||0)>(body[id].at||0)){body[id]=d.body[id];dirty["body/"+id]=1;n++}}
       if((d.targetsAt||0)>targetsAt){targets=d.targets||{};targetsAt=d.targetsAt;dirty["config/targets"]=1}
+      if(d.quit&&(d.quit.at||0)>(quit.at||0)){quit=d.quit;qlog=d.qlog||[]}
       saveLocal();note={text:"Restored "+n+" newer entries from the file."};render();if(db){cloud="saving";showStatus();flush()}
     }catch(e){say("That file is not a Home Gym Log backup.",true)}};
   fr.onerror=function(){say("That file could not be read.",true)};
@@ -530,6 +654,7 @@ main.addEventListener("click",function(e){
   if(b.dataset.d){var row=b.closest(".set"),a=row.querySelector(".a"),t=num(row.querySelector(".t").value)||0,d=+b.dataset.d;
     var cardEl=row.closest(".ex"),ex=findEx(cardEl.dataset.sid,cardEl.dataset.ex),stp=ex.unit==="s"?5:1,v=num(a.value);
     v=v==null?(d>0?t:Math.max(0,t-stp)):Math.max(0,v+d*stp);a.value=v;commit(row,"a",v);return}
+  if(b.dataset.q){qAction(b.dataset.q);return}
   if(b.dataset.pick){pick[cur]=b.dataset.pick;render();return}
   if(b.dataset.del){var id=b.dataset.del;if(armed===id){body[id]={date:id,deleted:true,at:Date.now()};armed="";mark("body/"+id)}else armed=id;render();return}
   if(b.id==="export"){doExport();return}
@@ -537,6 +662,7 @@ main.addEventListener("click",function(e){
 });
 $("importfile").addEventListener("change",function(){if(this.files&&this.files[0])doImport(this.files[0]);this.value=""});
 main.addEventListener("submit",function(e){e.preventDefault();
+  if(e.target.id==="quitform"){qSave();return}
   var w=num($("b_weight").value),h=num($("b_height").value);if(w==null&&h==null)return;
   body[cur]={date:cur,weightKg:w,heightCm:h,at:Date.now()};mark("body/"+cur);render()});
 $("week").addEventListener("click",function(e){var b=e.target.closest(".day");if(b){cur=b.dataset.date;armed="";render()}});
