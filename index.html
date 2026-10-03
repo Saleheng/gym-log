@@ -172,8 +172,8 @@ a{color:var(--acc)}
 .exmain{display:flex;flex-direction:column;gap:8px;min-width:0;grid-row:1;grid-column:1}
 .exside{display:flex;flex-direction:column;gap:8px;min-width:0}
 .hasdemo .exside{grid-row:1;grid-column:2}
-.demo{width:100%;aspect-ratio:3/2;border-radius:8px;background-color:var(--bg);background-size:200% 100%;background-position:0 0;background-repeat:no-repeat;animation:flip 2.2s steps(1) infinite;border:1px solid var(--line)}
-@keyframes flip{0%{background-position:0 0}50%{background-position:100% 0}}
+.demo{width:100%;aspect-ratio:3/2;border-radius:8px;background-color:var(--bg);background-size:200% 100%;background-position:0 0;background-repeat:no-repeat;border:1px solid var(--line)}
+.f2 .demo{background-position:100% 0}
 .hasdemo .cue{font-size:13.5px;color:var(--text-dim)}
 @media (max-width:760px){
   .exbody.hasdemo{display:flex;flex-direction:column}
@@ -217,7 +217,7 @@ a{color:var(--acc)}
   .step{grid-template-columns:44px minmax(0,1fr) 44px;gap:4px}
   .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
-@media (prefers-reduced-motion:reduce){*{transition:none!important}.demo{animation:none}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
@@ -687,6 +687,9 @@ document.addEventListener("visibilitychange",function(){
   wake();var ae=document.activeElement;
   if(db&&!Object.keys(dirty).length&&!(ae&&ae.tagName==="INPUT"))pull()});
 window.addEventListener("pagehide",saveLocal);
+
+/* ---------- demo loops: swap between the start and end photo. Script driven so it runs even when the device has animations switched off ---------- */
+setInterval(function(){if(document.visibilityState==="visible")main.classList.toggle("f2")},1100);
 
 /* ---------- boot ---------- */
 loadLocal();render();showStatus();
