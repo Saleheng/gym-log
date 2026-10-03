@@ -178,6 +178,15 @@ a{color:var(--acc)}
 .ytframe iframe{width:100%;height:100%;border:0;display:block}
 .ytopen{align-self:center;font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);padding:6px 0}
 .last{text-align:center}
+/* session stopwatch */
+.sw{display:flex;align-items:center;gap:6px;flex:none}
+.swgo{height:44px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font:500 16px var(--mono);font-variant-numeric:tabular-nums;display:flex;align-items:center;gap:8px;transition:border-color .12s}
+.swgo:hover{border-color:var(--lime)}
+.swgo svg{width:14px;height:14px;flex:none;color:var(--lime)}
+.swgo.on{background:var(--lime);border-color:var(--lime);color:var(--ink)}
+.swgo.on svg{color:var(--ink)}
+.swx{height:44px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:transparent;font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim)}
+.swx.armed{background:var(--coral);border-color:var(--coral);color:var(--ink)}
 /* calendar */
 .datenav .curdate{flex:none;width:auto;font:500 15px var(--mono);white-space:nowrap;border:1px solid var(--line);background:var(--surface);border-radius:6px;height:44px;padding:0 12px;transition:border-color .12s}
 .curdate:hover,.curdate[aria-expanded="true"]{border-color:var(--cyan)}
@@ -242,6 +251,7 @@ a{color:var(--acc)}
   <div class="top">
     <div class="bar1">
       <h1 class="brand">Home Gym <b>Log</b></h1>
+      <div class="sw"><button type="button" class="swgo" id="swgo" aria-label="Session stopwatch"></button><button type="button" class="swx" id="swx" hidden>Reset</button></div>
       <button class="rest" id="rest" type="button" hidden></button>
       <span class="chip err" id="status" hidden>Not saved</span>
       <div class="datenav">
@@ -350,9 +360,9 @@ function key(date,sid){return date+"_"+sid}
 
 /* ---------- storage: this tablet first, online copy second ---------- */
 var LS="hgl2";
-function snapshot(){return {logs:logs,body:body,targets:targets,targetsAt:targetsAt,quit:quit,qlog:qlog,dirty:Object.keys(dirty)}}
+function snapshot(){return {logs:logs,body:body,targets:targets,targetsAt:targetsAt,quit:quit,qlog:qlog,times:times,dirty:Object.keys(dirty)}}
 function saveLocal(){try{localStorage.setItem(LS,JSON.stringify(snapshot()));localOk=true}catch(e){localOk=false}showStatus()}
-function loadLocal(){try{var s=JSON.parse(localStorage.getItem(LS)||"null");if(s){logs=s.logs||{};body=s.body||{};targets=s.targets||{};targetsAt=s.targetsAt||0;if(s.quit)quit=s.quit;if(s.qlog)qlog=s.qlog;(s.dirty||[]).forEach(function(p){dirty[p]=1})}}catch(e){localOk=false}}
+function loadLocal(){try{var s=JSON.parse(localStorage.getItem(LS)||"null");if(s){logs=s.logs||{};body=s.body||{};targets=s.targets||{};targetsAt=s.targetsAt||0;if(s.quit)quit=s.quit;if(s.qlog)qlog=s.qlog;if(s.times)times=s.times;(s.dirty||[]).forEach(function(p){dirty[p]=1})}}catch(e){localOk=false}}
 function showStatus(){var el=$("status");el.hidden=localOk;el.textContent="Not saved";el.className="chip err"}
 function dataFor(p){var i=p.indexOf("/"),c=p.slice(0,i),id=p.slice(i+1);
   if(c==="config")return {sets:targets,at:targetsAt};
@@ -418,7 +428,7 @@ function nextUp(sid,date){var a=ROUTINES[sid].ex;for(var i=0;i<a.length;i++)if(!
 
 /* ---------- render ---------- */
 function renderTop(){
-  $("curdate").textContent=nice(cur);
+  $("curdate").textContent=nice(cur);swArmed=false;swRender();
   var mon=shift(cur,-dow(cur)),h="",today=iso(new Date());
   for(var i=0;i<7;i++){var d=shift(mon,i),w=WEEK[i],sid=liftFor(d)||"",p=sid?progress(d,sid):null;
     var mb=progress(d,"mob").any,pf=progress(d,"floor").any;
@@ -599,6 +609,23 @@ function render(){
   clearInterval(quitInt);quitInt=null;if(tab==="quit"){quitInt=setInterval(qTick,1000);qTick()}}
 
 /* ---------- calendar ---------- */
+var times={},swArmed=false,swArmT=null;
+function swMs(date){var t=times[date];return t?t.ms+(t.run?Date.now()-t.run:0):0}
+function swRender(){
+  var t=times[cur],on=!!(t&&t.run),ms=swMs(cur),sec=Math.floor(ms/1000),h=Math.floor(sec/3600),go=$("swgo"),x=$("swx");
+  go.className="swgo"+(on?" on":"");
+  go.innerHTML='<svg viewBox="0 0 14 14" aria-hidden="true">'+(on?'<rect x="1" y="1" width="4.5" height="12" rx="1" fill="currentColor"/><rect x="8.5" y="1" width="4.5" height="12" rx="1" fill="currentColor"/>':'<path d="M2 1v12l11-6z" fill="currentColor"/>')+'</svg><span>'+(h?h+":":"")+pad(Math.floor(sec%3600/60))+":"+pad(sec%60)+'</span>';
+  go.setAttribute("aria-label",(on?"Pause":"Start")+" the session stopwatch for "+nice(cur));
+  x.hidden=on||!ms;x.className="swx"+(swArmed?" armed":"");x.textContent=swArmed?"Sure?":"Reset"}
+$("swgo").onclick=function(){
+  var now=Date.now(),t=times[cur]||(times[cur]={ms:0,run:0,at:0});
+  if(t.run){t.ms+=now-t.run;t.run=0}
+  else{for(var k in times)if(times[k].run){times[k].ms+=now-times[k].run;times[k].run=0;times[k].at=now}t.run=now}
+  t.at=now;swArmed=false;saveLocal();swRender()};
+$("swx").onclick=function(){
+  if(!swArmed){swArmed=true;clearTimeout(swArmT);swArmT=setTimeout(function(){swArmed=false;swRender()},3000);swRender();return}
+  swArmed=false;times[cur]={ms:0,run:0,at:Date.now()};saveLocal();swRender()};
+setInterval(function(){var t=times[cur];if(t&&t.run)swRender()},1000);
 var calOpen=false,calMonth="";
 var MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
 function calRender(){
@@ -641,7 +668,7 @@ function commit(row,field,val){
 function say(text,bad){note={text:text,bad:!!bad};var el=$("note");if(el){el.textContent=text;el.className="msg"+(bad?" bad":"")}}
 function doExport(){
   try{
-    var data=JSON.stringify({app:"home-gym-log",v:1,exported:new Date().toISOString(),logs:logs,body:body,targets:targets,targetsAt:targetsAt,quit:quit,qlog:qlog},null,1);
+    var data=JSON.stringify({app:"home-gym-log",v:1,exported:new Date().toISOString(),logs:logs,body:body,targets:targets,targetsAt:targetsAt,quit:quit,qlog:qlog,times:times},null,1);
     var url=URL.createObjectURL(new Blob([data],{type:"application/json"})),a=document.createElement("a");
     a.href=url;a.download="home-gym-log-"+iso(new Date())+".json";document.body.appendChild(a);a.click();a.remove();
     setTimeout(function(){URL.revokeObjectURL(url)},4000);
@@ -655,6 +682,7 @@ function doImport(file){
       for(id in d.body||{}){if(!body[id]||(d.body[id].at||0)>(body[id].at||0)){body[id]=d.body[id];dirty["body/"+id]=1;n++}}
       if((d.targetsAt||0)>targetsAt){targets=d.targets||{};targetsAt=d.targetsAt;dirty["config/targets"]=1}
       if(d.quit&&(d.quit.at||0)>(quit.at||0)){quit=d.quit;qlog=d.qlog||[]}
+      for(id in d.times||{}){if(!times[id]||(d.times[id].at||0)>(times[id].at||0))times[id]=d.times[id]}
       saveLocal();note={text:"Restored "+n+" newer entries from the file."};render();if(db){cloud="saving";showStatus();flush()}
     }catch(e){say("That file is not a Home Gym Log backup.",true)}};
   fr.onerror=function(){say("That file could not be read.",true)};
