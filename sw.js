@@ -1,6 +1,6 @@
 // Home Gym Log service worker. Bump VERSION whenever index.html changes so tablets pick up the new build.
-const VERSION = "gymlog-v4";
-const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png",
+const VERSION = "gymlog-v5";
+const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png", "./media/mb_hang.jpg",
   "./media/pullup.jpg", "./media/inclinepress.jpg", "./media/dip.jpg", "./media/inclinerow.jpg", "./media/lateral.jpg", "./media/inclinecurl.jpg", "./media/kneeraise.jpg", "./media/chinup.jpg", "./media/flatpress.jpg", "./media/shoulderpress.jpg", "./media/row1arm.jpg", "./media/reardelt.jpg", "./media/skull.jpg", "./media/hammer.jpg", "./media/goblet.jpg", "./media/bulgarian.jpg", "./media/rdl.jpg", "./media/swing.jpg", "./media/calf.jpg", "./media/legraise.jpg", "./media/mb_catcow.jpg", "./media/mb_child.jpg", "./media/mb_hipflex.jpg", "./media/mb_ham.jpg", "./media/mb_glute.jpg", "./media/mb_chest.jpg"];
 
 self.addEventListener("install", (event) => {

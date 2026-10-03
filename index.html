@@ -96,12 +96,14 @@ a{color:var(--acc)}
 
 /* exercises: one per row, numbered in the order you train them */
 .list{display:flex;flex-direction:column;gap:12px;margin-top:12px}
-.ex{background:var(--surface);border-radius:8px;padding:16px;display:grid;grid-template-columns:48px minmax(0,1fr);gap:4px 14px;border:1px solid transparent;transition:border-color .15s,box-shadow .15s}
+.ex{background:var(--surface);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:14px;border:1px solid transparent;transition:border-color .15s,box-shadow .15s}
 .ex.next{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc),0 0 18px -4px var(--acc)}
-.badge{grid-row:1/3;width:48px;height:48px;border-radius:8px;background:var(--acc);color:var(--ink);font:600 20px var(--mono);display:grid;place-items:center;transition:background .15s}
+.badge{flex:none;width:48px;height:48px;border-radius:8px;background:var(--acc);color:var(--ink);font:600 20px var(--mono);display:grid;place-items:center;transition:background .15s}
 .ex.done .badge{background:var(--lime)}
 .ex.done{border-color:var(--line)}
-.exh{display:flex;align-items:baseline;justify-content:space-between;gap:10px;min-width:0}
+.exhead{display:flex;justify-content:center;align-items:center;gap:14px;min-width:0}
+.extitle{display:flex;flex-direction:column;gap:4px;min-width:0}
+.exh{min-width:0}
 .exh h3{font:600 21px/1.2 var(--cond);margin:0}
 .exh a{font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;text-decoration:none;white-space:nowrap;padding:6px 0}
 .exh a:hover{text-decoration:underline}
@@ -111,7 +113,7 @@ a{color:var(--acc)}
 .ex.next .tag.up{background:var(--acc);color:var(--ink)}
 .tag.up{display:none}.ex.next .tag.up{display:inline-block}
 .eq{color:var(--text-dim);font-size:14px}
-.exbody{grid-column:1/-1;display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.exbody{display:flex;flex-direction:column;gap:10px;min-width:0}
 .cue{margin:0;font-size:14.5px;max-width:68ch}
 .last{margin:0;font:400 12.5px var(--mono);color:var(--text-dim)}
 .sets{display:flex;flex-direction:column;gap:6px}
@@ -167,20 +169,28 @@ a{color:var(--acc)}
 .sched dt{font:500 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--text-dim);padding-top:2px}
 .sched dd{margin:0}
 
-/* demo loop beside the sets */
-.exbody.hasdemo{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:14px;align-items:start}
-.exmain{display:flex;flex-direction:column;gap:8px;min-width:0;grid-row:1;grid-column:1}
-.exside{display:flex;flex-direction:column;gap:8px;min-width:0}
-.hasdemo .exside{grid-row:1;grid-column:2}
-.demo{width:100%;aspect-ratio:3/2;border-radius:8px;background-color:var(--bg);background-size:200% 100%;background-position:0 0;background-repeat:no-repeat;border:1px solid var(--line)}
+/* demo loop, centred above the sets */
+.demo{width:min(100%,380px);margin:0 auto;aspect-ratio:3/2;border-radius:8px;background-color:var(--bg);background-size:200% 100%;background-position:0 0;background-repeat:no-repeat;border:1px solid var(--line)}
 .f2 .demo{background-position:100% 0}
-.hasdemo .cue{font-size:13.5px;color:var(--text-dim)}
-@media (max-width:760px){
-  .exbody.hasdemo{display:flex;flex-direction:column}
-  .hasdemo .exside{order:-1;flex-direction:row;align-items:center;gap:12px}
-  .hasdemo .demo{width:46%;flex:none}
-}
-/* quit page */
+.yt{width:min(100%,380px);margin:0 auto;height:96px;border-radius:8px;border:1px solid var(--acc);background:var(--bg);color:var(--acc);text-decoration:none;display:flex;align-items:center;justify-content:center;gap:12px;font:600 17px var(--cond);transition:transform .12s}
+.yt:hover{transform:translateY(-1px)}
+.yt svg{width:34px;height:34px;flex:none}
+.last{text-align:center}
+/* calendar */
+.curdate{white-space:nowrap;border:1px solid var(--line);background:var(--surface);border-radius:6px;height:44px;padding:0 12px;transition:border-color .12s}
+.curdate:hover,.curdate[aria-expanded="true"]{border-color:var(--cyan)}
+.cal{position:absolute;top:100%;right:0;z-index:10;width:min(360px,100%);background:var(--raised);border:1px solid var(--line);border-radius:8px;padding:12px;box-shadow:0 18px 40px -12px #000}
+.calhead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.calhead b{font:600 18px var(--cond)}
+.calhead button{width:44px;height:44px;border-radius:6px;border:1px solid var(--line);background:var(--surface);font:500 18px var(--mono)}
+.calgrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.calgrid span{font:500 10px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);text-align:center;padding:4px 0}
+.calgrid button{position:relative;height:44px;border-radius:6px;border:1px solid transparent;background:var(--surface);font:500 15px var(--mono);font-variant-numeric:tabular-nums}
+.calgrid button:hover{border-color:var(--text-dim)}
+.calgrid button.today{color:var(--cyan);border-color:var(--cyan)}
+.calgrid button.sel{background:var(--text);color:var(--ink);border-color:var(--text)}
+.calgrid button.has::after{content:"";position:absolute;left:50%;bottom:5px;width:6px;height:6px;margin-left:-3px;border-radius:50%;background:var(--lime)}
+
 .qhero{text-align:center;padding:26px 16px;border:1px solid var(--lime);box-shadow:0 0 0 1px var(--lime),0 0 18px -4px var(--lime)}
 .qclock{font:500 clamp(30px,8vw,58px)/1.1 var(--mono);font-variant-numeric:tabular-nums;color:var(--lime);margin:8px 0}
 .qstats b{color:var(--lime)}
@@ -210,7 +220,7 @@ a{color:var(--acc)}
   .head h2{font-size:28px}
   .brand{font-size:19px}
   .seg button{font-size:14px;height:46px}
-  .ex{padding:12px;grid-template-columns:40px minmax(0,1fr);gap:4px 10px}
+  .ex{padding:12px}
   .badge{width:40px;height:40px;font-size:17px}
   .set,.sethead{grid-template-columns:26px 56px minmax(0,1fr) 62px;gap:6px}
   .nokg .set,.nokg .sethead{grid-template-columns:26px 60px minmax(0,1fr)}
@@ -227,14 +237,15 @@ a{color:var(--acc)}
     <div class="bar1">
       <h1 class="brand">Home Gym <b>Log</b></h1>
       <button class="rest" id="rest" type="button" hidden></button>
-      <span class="chip" id="status">Loading</span>
+      <span class="chip err" id="status" hidden>Not saved</span>
       <div class="datenav">
         <button type="button" id="prev" aria-label="Previous day">&lsaquo;</button>
-        <span class="curdate" id="curdate"></span>
+        <button type="button" class="curdate" id="curdate" aria-haspopup="dialog" aria-expanded="false"></button>
         <button type="button" id="next" aria-label="Next day">&rsaquo;</button>
         <button type="button" id="today" class="now">Today</button>
       </div>
     </div>
+    <div class="cal" id="cal" role="dialog" aria-label="Pick a date" hidden></div>
     <div class="week" id="week"></div>
     <div class="seg tabs" id="tabs" role="tablist"></div>
   </div>
@@ -305,8 +316,9 @@ var ROUTINES={
   ]}
 };
 var CUES={"pullup": "Hang with arms straight, pull your chest to the bar, lower under control. No swinging.", "inclinepress": "Shoulder blades pinned back, lower the dumbbells to chest level, press up and slightly in.", "dip": "Lean forward a little, lower until the upper arms are level with the floor, press back up.", "inclinerow": "Chest stays on the pad. Pull the elbows back toward your hips and squeeze the shoulder blades.", "lateral": "Soft elbows, raise out to the sides to shoulder height, lower slowly. Light weight, no shrug.", "inclinecurl": "Lie back with the arms hanging straight down. Curl without letting the elbows drift forward.", "kneeraise": "Curl the knees up toward your chest by rounding the lower back, then lower without swinging.", "chinup": "Palms facing you, pull until the chin clears the bar, lower all the way to straight arms.", "flatpress": "Feet planted, lower the dumbbells beside your chest, press up until the arms are straight.", "shoulderpress": "Back against the pad, press from ear height to overhead without arching the lower back.", "row1arm": "One hand and knee on the bench, back flat. Pull the dumbbell to your hip, lower fully.", "reardelt": "Hinge forward, lead with the elbows and raise out to the sides. Pause, then lower slowly.", "skull": "Upper arms stay vertical. Bend only the elbows to lower the dumbbells beside your head, then extend.", "hammer": "Palms face each other. Curl with the elbows pinned to your sides, no body swing.", "bag": "Three rounds of two minutes. Keep moving and keep your guard up between combinations.", "goblet": "Hold the weight at your chest, sit down between your heels, elbows inside the knees, drive up.", "bulgarian": "Back foot on the bench, drop the back knee straight down, push through the front heel.", "rdl": "Soft knees, push the hips back and slide the dumbbells down your thighs with a flat back, then stand tall.", "swing": "Hinge, hike the bell back between the legs, then snap the hips. The arms only guide the bell.", "calf": "Rise as high as you can, pause for a second, then lower the heels below the plate for a full stretch.", "legraise": "Hang still, raise straight legs to hip height, lower slowly. Bend the knees if you start to swing."};
-var MEDIA=["pullup", "inclinepress", "dip", "inclinerow", "lateral", "inclinecurl", "kneeraise", "chinup", "flatpress", "shoulderpress", "row1arm", "reardelt", "skull", "hammer", "goblet", "bulgarian", "rdl", "swing", "calf", "legraise", "mb_catcow", "mb_child", "mb_hipflex", "mb_ham", "mb_glute", "mb_chest"];
-Object.keys(ROUTINES).forEach(function(k){ROUTINES[k].ex.forEach(function(ex){ex.link="";if(CUES[ex.id])ex.cue=CUES[ex.id];ex.media=MEDIA.indexOf(ex.id)>=0})});
+var VIDEO={"mb_book":"watch?v=rDviWORCWEw","mb_ext":"watch?v=VAzl0iFn_rk","pf_slow":"watch?v=MJ7EfGu03-0","pf_quick":"watch?v=MJ7EfGu03-0","bag":"results?search_query=heavy+bag+workout+for+beginners"};
+var MEDIA=["mb_hang","pullup", "inclinepress", "dip", "inclinerow", "lateral", "inclinecurl", "kneeraise", "chinup", "flatpress", "shoulderpress", "row1arm", "reardelt", "skull", "hammer", "goblet", "bulgarian", "rdl", "swing", "calf", "legraise", "mb_catcow", "mb_child", "mb_hipflex", "mb_ham", "mb_glute", "mb_chest"];
+Object.keys(ROUTINES).forEach(function(k){ROUTINES[k].ex.forEach(function(ex){ex.link="";if(CUES[ex.id])ex.cue=CUES[ex.id];ex.media=MEDIA.indexOf(ex.id)>=0;ex.video=VIDEO[ex.id]||""})});
 var LIFTS=["upperA","upperB","legs"];
 var WEEK=[["Mon","Upper A","upperA"],["Tue","Soccer",""],["Wed","Rest",""],["Thu","Upper B","upperB"],["Fri","Rest or walk",""],["Sat","Legs and core","legs"],["Sun","Rest",""]];
 var DAYNAME=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
@@ -336,12 +348,7 @@ var LS="hgl2";
 function snapshot(){return {logs:logs,body:body,targets:targets,targetsAt:targetsAt,quit:quit,qlog:qlog,dirty:Object.keys(dirty)}}
 function saveLocal(){try{localStorage.setItem(LS,JSON.stringify(snapshot()));localOk=true}catch(e){localOk=false}showStatus()}
 function loadLocal(){try{var s=JSON.parse(localStorage.getItem(LS)||"null");if(s){logs=s.logs||{};body=s.body||{};targets=s.targets||{};targetsAt=s.targetsAt||0;if(s.quit)quit=s.quit;if(s.qlog)qlog=s.qlog;(s.dirty||[]).forEach(function(p){dirty[p]=1})}}catch(e){localOk=false}}
-function showStatus(){var el=$("status"),t,c="chip";
-  if(cloud==="saving")t="Saving";
-  else if(cloud==="ok"){t=localOk?"Saved and backed up":"Backed up online";c+=" ok"}
-  else if(localOk){t="Saved on this tablet";c+=" ok"}
-  else{t="Not saved";c+=" err"}
-  el.textContent=t;el.className=c}
+function showStatus(){var el=$("status");el.hidden=localOk;el.textContent="Not saved";el.className="chip err"}
 function dataFor(p){var i=p.indexOf("/"),c=p.slice(0,i),id=p.slice(i+1);
   if(c==="config")return {sets:targets,at:targetsAt};
   return c==="logs"?logs[id]:body[id]}
@@ -436,23 +443,21 @@ function card(ex,sid,n,nx){
     last='<p class="last">Last time '+prev.map(function(s){return s.a==null?"0":s.a}).join(" ")+(ws.length?" at "+Math.max.apply(null,ws)+" kg":"")+'</p>'}
   return (ex.grp?'<div class="grp"><h3>'+esc(ex.grp[0])+'</h3><span>'+esc(ex.grp[1])+'</span></div>':"")+
    '<article class="ex'+(ex.kg?"":" nokg")+(done?" done":"")+(nx===ex.id?" next":"")+'" data-ex="'+ex.id+'" data-sid="'+sid+'" data-n="'+pad(n)+'">'+
-   '<div class="badge">'+(done?"&#10003;":pad(n))+'</div>'+
-   '<div class="exh"><h3>'+esc(ex.name)+'</h3>'+'</div>'+
-   '<div class="meta"><span class="goal">'+goal+'</span><span class="tag up">Up next</span>'+(ex.opt?'<span class="tag">Optional</span>':"")+'<span class="eq">'+esc(ex.eq)+'</span></div>'+
-   '<div class="exbody'+(ex.media?" hasdemo":"")+'"><div class="exside">'+(ex.media?'<div class="demo" role="img" aria-label="'+esc(ex.name)+' demonstration" style="background-image:url(media/'+ex.id+'.jpg)"></div>':"")+(ex.cue?'<p class="cue">'+esc(ex.cue)+'</p>':"")+'</div><div class="exmain">'+last+
+   '<div class="exhead"><div class="badge">'+(done?"&#10003;":pad(n))+'</div><div class="extitle"><div class="exh"><h3>'+esc(ex.name)+'</h3></div>'+
+   '<div class="meta"><span class="goal">'+goal+'</span><span class="tag up">Up next</span>'+(ex.opt?'<span class="tag">Optional</span>':"")+'<span class="eq">'+esc(ex.eq)+'</span></div></div></div>'+
+   '<div class="exbody">'+(ex.media?'<div class="demo" role="img" aria-label="'+esc(ex.name)+' demonstration" style="background-image:url(media/'+ex.id+'.jpg)"></div>':ex.video?'<a class="yt" href="https://www.youtube.com/'+ex.video+'" data-yt="'+ex.video+'" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="currentColor"/><path d="M10 7.5v9l7-4.5z" fill="var(--bg)"/></svg>Watch on YouTube</a>':"")+last+
    '<div class="sets"><div class="sethead"><span>Set</span><span class="ht">Target</span><span>Actual</span>'+(ex.kg?"<span>kg</span>":"")+'</div>'+
    sets.map(function(s,i){return setRow(ex,s,i)}).join("")+'</div>'+
-   '<div class="foot">'+footHtml(ex,sets)+'</div></div></div></article>'}
+   '<div class="foot">'+footHtml(ex,sets)+'</div></div></article>'}
 function routineHtml(sid){
   var r=ROUTINES[sid],p=progress(cur,sid),nx=nextUp(sid,cur);
   return '<section data-routine="'+sid+'"><div class="head"><div class="headrow"><h2>'+esc(r.name)+'</h2><span class="total"><span class="pct">'+p.pct+'</span>% <small>of target</small></span></div>'+
-   '<div class="big"><i style="width:'+p.pct+'%"></i></div><p>'+esc(r.blurb)+'</p></div>'+
-   '<div class="note">'+esc(r.tip)+'</div>'+
+   '<div class="big"><i style="width:'+p.pct+'%"></i></div></div>'+
    '<div class="list">'+r.ex.map(function(ex,i){return card(ex,sid,i+1,nx)}).join("")+'</div></section>'}
 function liftHtml(){
   var sid=liftFor(cur),w=WEEK[dow(cur)];
   var chips='<div class="seg pick">'+LIFTS.map(function(s){return '<button type="button" data-pick="'+s+'" aria-pressed="'+(s===sid)+'">'+ROUTINES[s].name+'</button>'}).join("")+'</div>';
-  if(!sid)return chips+'<div class="head"><h2>'+DAYNAME[dow(cur)]+": "+esc(w[1])+'</h2><p>No lifting on the schedule today. Mobility is fair game. If you moved a session to today, pick it above.</p></div>';
+  if(!sid)return chips+'<div class="head"><h2>'+DAYNAME[dow(cur)]+": "+esc(w[1])+'</h2></div>';
   return chips+routineHtml(sid)}
 function bodyRows(){return Object.keys(body).map(function(k){return body[k]}).filter(function(r){return !r.deleted}).sort(function(a,b){return a.date<b.date?-1:1})}
 function chartHtml(rows){
@@ -493,33 +498,12 @@ function bodyHtml(){
      :'<p class="empty">No entries yet. Put your weight and height in the form and save, and the first row lands here.</p>')+'</div>'+
   '</div>'}
 function moreHtml(){
-  var nl=Object.keys(logs).length,nb=bodyRows().length;
-  return '<div class="head"><div class="headrow"><h2>More</h2></div><p>Where your data lives, how the log works, and the rules of the plan.</p></div>'+
+  return '<div class="head"><div class="headrow"><h2>More</h2></div></div>'+
   '<div class="stack">'+
    '<div class="panel"><h3>Your data</h3>'+
-    '<p>Every tap is saved on this tablet straight away, so you can close the app and pick up where you left off, with or without a connection. Nothing leaves the tablet. Save a backup file now and then, since clearing the site data in the browser would erase the log.</p>'+
-    '<p class="mono" style="color:var(--text-dim)">'+nl+" session logs · "+nb+" body entries on this tablet</p>"+
     '<div class="btns"><button type="button" class="go" id="export">Save backup file</button><button type="button" class="go ghost" id="import">Restore from file</button></div>'+
     '<p class="msg'+(note&&note.bad?" bad":"")+'" id="note">'+(note?esc(note.text):"")+'</p></div>'+
-   '<div class="panel"><h3>Week</h3><dl class="sched">'+WEEK.map(function(w,i){return '<dt>'+w[0]+'</dt><dd>'+esc(w[1])+(i===1||w[2]?", then the hips and hamstrings block":"")+'</dd>'}).join("")+'</dl>'+
-    '<p class="eq" style="margin:12px 0 0">Spine reset and pelvic floor fit any day.</p></div>'+
-   '<div class="panel"><h3>How to use the log</h3><ul>'+
-    '<li><b>Target</b> is the reps or seconds you plan for that set. Change it any time and it sticks for next session.</li>'+
-    '<li><b>Actual</b> is what you really did. One tap on plus fills in the target, then nudge it up or down.</li>'+
-    '<li>A set turns green when actual meets target and amber when it falls short. The glowing card is the one to do next.</li>'+
-    '<li>The kg box remembers what you lifted last time.</li>'+
-    '<li>Logging a lifting set starts the rest clock: 2 minutes on the first three lifts, 75 seconds on the rest.</li></ul></div>'+
-   '<div class="panel"><h3>Session rules</h3><ul>'+
-    '<li>Each lifting session runs 50 to 60 minutes.</li>'+
-    '<li>Warm up with 5 minutes of light bag work or skipping, then one easy set of the first two lifts at half the working weight.</li>'+
-    '<li>Pick a weight that lets you hit the bottom of the rep range with two reps left in the tank.</li>'+
-    '<li>Stop a set when form breaks, and stop the exercise at sharp joint pain.</li>'+
-    '<li>Power tower: strict reps only, no swinging. Check the adjustment knobs are tight and keep the extension cord off the frame.</li></ul></div>'+
-   '<div class="panel"><h3>Progression</h3><ul>'+
-    '<li>Add reps each week until every set reaches the top of the range, then move up one dumbbell size and restart at the bottom.</li>'+
-    '<li>For pull ups, chin ups and dips, add load with a dip belt once you reach 3 sets of 10 at bodyweight.</li>'+
-    '<li>Every sixth week, cut all sets in half and keep the weights the same.</li>'+
-    '<li>Stretches progress by depth and ease, not by longer holds.</li></ul></div>'+
+   '<div class="panel"><h3>Week</h3><dl class="sched">'+WEEK.map(function(w,i){return '<dt>'+w[0]+'</dt><dd>'+esc(w[1])+(i===1||w[2]?", then the hips and hamstrings block":"")+'</dd>'}).join("")+'</dl></div>'+
   '</div>'}
 /* ---------- quit page ---------- */
 var MILES=[[20*60e3,"20 min","20 minutes","Heart rate and blood pressure drop."],[12*3600e3,"12 h","12 hours","Carbon monoxide in your blood drops to normal."],[14*864e5,"2 wk","2 to 12 weeks","Circulation improves and lung function increases."],[30*864e5,"1 mo","1 to 9 months","Coughing and shortness of breath decrease."],[365*864e5,"1 yr","1 year","Risk of coronary heart disease is about half that of a smoker."],[5*365*864e5,"5 yr","5 years","Stroke risk falls to that of a non smoker, 5 to 15 years after quitting."],[10*365*864e5,"10 yr","10 years","Lung cancer risk falls to about half that of a smoker."],[15*365*864e5,"15 yr","15 years","Risk of coronary heart disease matches a non smoker."]];
@@ -538,7 +522,6 @@ function localStamp(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.
 function qSetupHtml(st){
   var v=function(x){return x==null?"":x};
   return '<form class="panel" id="quitform"><h3>'+(st?"Your quit details":"Set your quit day")+'</h3>'+
-   (st?"":'<p>Tell the log when you stop and what smoking costs you. It does the counting from there, down to the second and the cent.</p>')+
    '<div class="form">'+
    '<label class="full"><span class="lbl">Quit date and time</span><input id="q_start" type="datetime-local" required value="'+esc(quit.start||localStamp(new Date()))+'"></label>'+
    '<label><span class="lbl">Cigarettes per day</span><input id="q_perday" type="number" inputmode="decimal" min="1" step="1" required placeholder="0" value="'+v(quit.perDay)+'"></label>'+
@@ -607,6 +590,26 @@ function render(){
   main.innerHTML=tab==="lift"?liftHtml():tab==="mob"?routineHtml("mob")+routineHtml("floor"):tab==="body"?bodyHtml():tab==="quit"?quitHtml():moreHtml();
   clearInterval(quitInt);quitInt=null;if(tab==="quit"){quitInt=setInterval(qTick,1000);qTick()}}
 
+/* ---------- calendar ---------- */
+var calOpen=false,calMonth="";
+var MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+function calRender(){
+  var el=$("cal");el.hidden=!calOpen;$("curdate").setAttribute("aria-expanded",calOpen);if(!calOpen)return;
+  var p=calMonth.split("-"),y=+p[0],m=+p[1]-1,first=new Date(y,m,1),lead=(first.getDay()+6)%7,days=new Date(y,m+1,0).getDate(),today=iso(new Date()),has={},k;
+  for(k in logs){var l=logs[k],any=false;for(var e in l.sets||{})if(l.sets[e].some(function(s){return s.a!=null}))any=true;if(any)has[l.date]=1}
+  var h='<div class="calhead"><button type="button" data-cal="-1" aria-label="Previous month">&lsaquo;</button><b>'+MONTHS[m]+" "+y+'</b><button type="button" data-cal="1" aria-label="Next month">&rsaquo;</button></div><div class="calgrid">';
+  ["M","T","W","T","F","S","S"].forEach(function(d){h+="<span>"+d+"</span>"});
+  for(var i=0;i<lead;i++)h+="<i></i>";
+  for(var d=1;d<=days;d++){var ds=y+"-"+pad(m+1)+"-"+pad(d);h+='<button type="button" data-date="'+ds+'" class="'+(ds===cur?"sel ":"")+(ds===today?"today ":"")+(has[ds]?"has":"")+'">'+d+'</button>'}
+  el.innerHTML=h+"</div>"}
+function calToggle(open){calOpen=open;if(open)calMonth=cur.slice(0,7);calRender()}
+$("curdate").onclick=function(e){e.stopPropagation();calToggle(!calOpen)};
+$("cal").addEventListener("click",function(e){e.stopPropagation();var b=e.target.closest("button");if(!b)return;
+  if(b.dataset.cal){var p=calMonth.split("-"),d=new Date(+p[0],+p[1]-1+(+b.dataset.cal),1);calMonth=d.getFullYear()+"-"+pad(d.getMonth()+1);calRender();return}
+  cur=b.dataset.date;armed="";calOpen=false;render();calRender()});
+document.addEventListener("click",function(){if(calOpen)calToggle(false)});
+document.addEventListener("keydown",function(e){if(e.key==="Escape"&&calOpen)calToggle(false)});
+
 /* ---------- interaction ---------- */
 function findEx(sid,id){var a=ROUTINES[sid].ex;for(var i=0;i<a.length;i++)if(a[i].id===id)return a[i]}
 function refresh(cardEl,ex,sid){
@@ -650,6 +653,9 @@ function doImport(file){
 main.addEventListener("input",function(e){var inp=e.target,row=inp.closest&&inp.closest(".set");if(!row)return;
   commit(row,inp.classList.contains("t")?"t":inp.classList.contains("a")?"a":"w",num(inp.value))});
 main.addEventListener("click",function(e){
+  var y=e.target.closest("a.yt");
+  if(y&&/Android/i.test(navigator.userAgent)){e.preventDefault();var web="https://www.youtube.com/"+y.dataset.yt;
+    location.href="intent://www.youtube.com/"+y.dataset.yt+"#Intent;scheme=https;package=com.google.android.youtube;S.browser_fallback_url="+encodeURIComponent(web)+";end";return}
   var b=e.target.closest("button");if(!b)return;
   if(b.dataset.d){var row=b.closest(".set"),a=row.querySelector(".a"),t=num(row.querySelector(".t").value)||0,d=+b.dataset.d;
     var cardEl=row.closest(".ex"),ex=findEx(cardEl.dataset.sid,cardEl.dataset.ex),stp=ex.unit==="s"?5:1,v=num(a.value);
