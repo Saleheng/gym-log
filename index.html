@@ -212,7 +212,11 @@ a{color:var(--acc)}
 .qstep button,.qstep input{height:56px}
 .qstep input{width:100%;min-width:0;border-radius:6px;border:1px solid var(--line);background:var(--raised);text-align:center;font:500 24px var(--mono);-moz-appearance:textfield;appearance:textfield}
 .qstep input::-webkit-outer-spin-button,.qstep input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.qother{display:block;width:min(100%,360px);margin:0 auto 14px;height:48px;border-radius:6px;border:1px solid var(--magenta);background:var(--raised);color:var(--text);padding:0 12px;font:inherit}
+.qother:focus{outline:none;border-color:var(--text)}
 .qpack{width:100%}
+.go.danger{background:transparent;border:1px solid var(--coral);color:var(--coral)}
+.go.danger.armed{background:var(--coral);color:var(--ink)}
 .qpack[aria-pressed="true"]{background:var(--coral)}
 .deload{border-color:var(--lime);margin-top:12px}
 .deload b{color:var(--lime)}
@@ -388,7 +392,7 @@ var logs={},body={},targets={},targetsAt=0,dirty={},pick={};
 var db=null,dl=null,flushing=false,timer=null,armed="",localOk=true,cloud="none",note=null;
 var cur=iso(new Date()),tab="lift";
 var plan={},skipOpen=false,qday={};
-var notes={},soccer={},meta={lastBackup:0,snooze:0},photos={},viewPhoto="",craveTrig="";
+var notes={},soccer={},meta={lastBackup:0,snooze:0},photos={},viewPhoto="",craveTrig="",craveOther="",qArm=false;
 var quit={start:"",perDay:null,packPrice:null,packSize:20,goalName:"",goalCost:null,at:0},qlog=[],qEdit=false,crave=0,quitInt=null,tipIx=0,qMsg="";
 var $=function(id){return document.getElementById(id)};
 var main=$("main");
@@ -684,6 +688,7 @@ function craveHtml(){
     '<p class="msg" id="q_msg">'+esc(qMsg)+'</p></div>';
   return '<div class="panel crave"><h3>Ride it out</h3><div class="cclock" id="q_crave"></div><p class="ctip" id="q_tip">'+esc(TIPS[tipIx%TIPS.length])+'</p>'+
     '<div class="trigs" role="group" aria-label="What set it off">'+TRIGS.map(function(t){return '<button type="button" data-trig="'+t+'" aria-pressed="'+(craveTrig===t)+'">'+t+'</button>'}).join("")+'</div>'+
+    '<input class="qother" id="q_other" type="text" maxlength="40" placeholder="What was it?" aria-label="Describe the trigger" value="'+esc(craveOther)+'"'+(craveTrig==="Other"?"":" hidden")+'>'+
     '<div class="btn3"><button type="button" class="go" data-q="won">Beat it</button><button type="button" class="go ghost" data-q="tip">Another idea</button><button type="button" class="go ghost" data-q="slip">I smoked one</button></div></div>'}
 function qDayHtml(st){
   var today=iso(new Date());
@@ -696,7 +701,7 @@ function qDayHtml(st){
 function quitHtml(){
   var st=qStats();
   var head='<div class="head"><div class="headrow"><h2>Smoke free</h2></div></div>';
-  if(!st||qEdit)return head+'<div class="stack">'+qSetupHtml(st)+(st?'<button type="button" class="linkbtn" data-q="cancel">Cancel</button>':"")+'</div>';
+  if(!st||qEdit)return head+'<div class="stack">'+qSetupHtml(st)+(st?'<div class="panel"><h3>Start over</h3><p>Wipes every logged cigarette, pack and craving on this page. Your quit date stays as set above.</p><button type="button" class="go danger'+(qArm?" armed":"")+'" data-q="reset">'+(qArm?"Tap again to wipe it all":"Reset all quit data")+'</button></div><button type="button" class="linkbtn" data-q="cancel">Cancel</button>':"")+'</div>';
   if(st.future)return head+'<div class="stack"><div class="panel qhero"><span class="lbl">Quit day starts in</span><div class="qclock">'+st.inDays+(st.inDays===1?" day":" days")+'</div><p class="eq" style="margin:0">'+nice(st.start)+'</p></div>'+
     '<button type="button" class="linkbtn" data-q="edit">Change quit date</button></div>';
   var miles=MILES.map(function(m){var p=Math.min(100,st.el/m[0]*100),done=p>=100;
@@ -708,7 +713,6 @@ function quitHtml(){
     '<p class="eq" style="margin:12px 0 0"><span class="mono">'+money(PACK)+'</span> for every day without buying a pack. That is <span class="mono">'+money(PACK*7)+'</span> a week, <span class="mono">'+money(PACK*30)+'</span> a month, <span class="mono">'+money(PACK*365)+'</span> a year.</p></div>'+
    qDayHtml(st)+craveHtml()+patternsHtml()+
    '<div class="panel"><h3>What your body is doing</h3><div class="miles">'+miles+'</div></div>'+
-   '<div class="panel"><h3>Backup</h3><p style="margin:0">Quitline is free and confidential on <span class="mono">13 7848</span>.</p></div>'+
    '<button type="button" class="linkbtn" data-q="edit">Change quit date</button></div>'}
 function qTick(){
   var c=$("q_crave");if(!c)return;
@@ -716,13 +720,15 @@ function qTick(){
   if(left<=0)$("q_tip").textContent="Three minutes done. If it is still there, go again. It will fade."}
 function qSetDay(date,patch){var q=qday[date]||(qday[date]={cigs:0,pack:false});for(var k in patch)q[k]=patch[k];q.at=Date.now();quit.at=q.at;saveLocal()}
 function qAction(a){
-  var now=Date.now(),today=iso(new Date());
+  var now=Date.now(),today=iso(new Date()),trig=craveTrig==="Other"&&craveOther.trim()?craveOther.trim():craveTrig;
+  if(a!=="reset")qArm=false;
   if(a==="edit"){qEdit=true}
+  else if(a==="reset"){if(!qArm){qArm=true;render();return}qArm=false;qday={};qlog=[];crave=0;qMsg="";qEdit=false}
   else if(a==="cancel"){qEdit=false}
-  else if(a==="crave"){craveTrig="";crave=now+180000;tipIx=Math.floor(Math.random()*TIPS.length);qMsg=""}
+  else if(a==="crave"){craveTrig="";craveOther="";crave=now+180000;tipIx=Math.floor(Math.random()*TIPS.length);qMsg=""}
   else if(a==="tip"){tipIx++;$("q_tip").textContent=TIPS[tipIx%TIPS.length];return}
-  else if(a==="won"){qlog.push({t:now,type:"won",trig:craveTrig});crave=0;qMsg="Craving beaten and logged."}
-  else if(a==="slip"){qlog.push({t:now,type:"slip",n:1,trig:crave?craveTrig:""});crave=0;qSetDay(today,{cigs:((qday[today]||{}).cigs||0)+1});qMsg="Logged one for today. The streak restarts tomorrow, the money stays."}
+  else if(a==="won"){qlog.push({t:now,type:"won",trig:trig});crave=0;qMsg="Craving beaten and logged."}
+  else if(a==="slip"){qlog.push({t:now,type:"slip",n:1,trig:crave?trig:""});crave=0;qSetDay(today,{cigs:((qday[today]||{}).cigs||0)+1});qMsg="Logged one for today. The streak restarts tomorrow, the money stays."}
   quit.at=now;saveLocal();render()}
 function qSave(){
   var start=$("q_start").value;if(!start)return;
@@ -825,6 +831,7 @@ function doImport(file){
   fr.onerror=function(){say("That file could not be read.",true)};
   fr.readAsText(file)}
 main.addEventListener("input",function(e){var inp=e.target,row=inp.closest&&inp.closest(".set");
+  if(inp.id==="q_other"){craveOther=inp.value;return}
   if(inp.id==="q_cigs_in"){qSetDay(cur,{cigs:Math.round(num(inp.value)||0)});return}
   if(inp.id==="daynote"){notes[cur]={text:inp.value,at:Date.now()};saveLocal();return}
   if(inp.classList&&inp.classList.contains("soc")){var g=soccer[cur]||(soccer[cur]={});g[inp.dataset.f]=num(inp.value);g.at=Date.now();saveLocal();renderTop();return}
@@ -842,7 +849,7 @@ main.addEventListener("click",function(e){
   if(b.dataset.q){qAction(b.dataset.q);return}
   if(b.dataset.qc){qSetDay(cur,{cigs:Math.max(0,((qday[cur]||{}).cigs||0)+(+b.dataset.qc))});render();return}
   if(b.id==="q_pack"){qSetDay(cur,{pack:!(qday[cur]||{}).pack});render();return}
-  if(b.dataset.trig){craveTrig=craveTrig===b.dataset.trig?"":b.dataset.trig;b.parentNode.querySelectorAll("button").forEach(function(x){x.setAttribute("aria-pressed",x.dataset.trig===craveTrig)});return}
+  if(b.dataset.trig){craveTrig=craveTrig===b.dataset.trig?"":b.dataset.trig;b.parentNode.querySelectorAll("button").forEach(function(x){x.setAttribute("aria-pressed",x.dataset.trig===craveTrig)});var qo=$("q_other");if(qo){qo.hidden=craveTrig!=="Other";if(!qo.hidden)qo.focus()}return}
   if(b.dataset.sug){var c2=b.closest(".ex"),sid2=c2.dataset.sid,ex2=findEx(sid2,c2.dataset.ex),sg=suggest(ex2,sid2);if(!sg)return;
     var own=ownSets(ex2,sid2,cur);own.forEach(function(q,i){q.t=sg.t[i]});targets[ex2.id]=sg.t.slice();targetsAt=Date.now();mark("config/targets");mark("logs/"+key(cur,sid2));render();return}
   if(b.id==="skipopen"){skipOpen=true;render();var dn=$("daynote");if(dn)dn.focus();return}
