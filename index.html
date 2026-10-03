@@ -178,6 +178,36 @@ a{color:var(--acc)}
 .ytframe iframe{width:100%;height:100%;border:0;display:block}
 .ytopen{align-self:center;font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);padding:6px 0}
 .last{text-align:center}
+/* trend, suggestion, notes, soccer, photos, backup nudge, craving patterns */
+.trend{display:flex;align-items:center;justify-content:center;gap:10px;font:500 12px var(--mono);color:var(--text-dim)}
+.trend svg{width:120px;height:30px;flex:none}
+.trend b{color:var(--text);font-weight:500}
+.sug{align-self:center;height:40px;padding:0 16px;border-radius:999px;border:1px solid var(--amber);background:transparent;color:var(--amber);font:600 15px var(--cond);transition:transform .12s}
+.sug:hover{transform:translateY(-1px)}
+.panel textarea{width:100%;min-height:90px;border-radius:6px;border:1px solid var(--line);background:var(--raised);color:var(--text);font:inherit;padding:10px 12px;resize:vertical}
+.panel textarea:focus{border-color:var(--acc);outline:none}
+.nudge{display:flex;flex-wrap:wrap;align-items:center;gap:10px;border:1px solid var(--amber);border-radius:8px;padding:10px 14px;margin-top:14px}
+.nudge span{flex:1 1 200px;min-width:0}
+.nudge button{height:40px;padding:0 14px;border-radius:6px;border:0;background:var(--amber);color:var(--ink);font:600 15px var(--cond)}
+.nudge button.ghost{background:transparent;border:1px solid var(--line);color:var(--text-dim)}
+.pick4{grid-auto-columns:minmax(0,1fr)}
+.photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;margin-top:12px}
+.photos button{padding:0;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--bg);display:flex;flex-direction:column}
+.photos img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block}
+.photos span{font:500 11px var(--mono);color:var(--text-dim);padding:5px;text-align:center}
+.compare{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:12px}
+.compare figure{margin:0}
+.compare img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;display:block}
+.compare figcaption{font:500 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--text-dim);padding-top:5px;text-align:center}
+.viewer{position:fixed;inset:0;z-index:20;background:rgba(15,16,20,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:16px}
+.viewer img{max-width:100%;max-height:78vh;border-radius:8px}
+.viewer div{display:flex;gap:10px}
+.trigs{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:0 0 14px}
+.trigs button{height:38px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:transparent;font:500 14px var(--sans);color:var(--text-dim)}
+.trigs button[aria-pressed="true"]{border-color:var(--magenta);color:var(--magenta)}
+.bars{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:6px 10px;align-items:center;font-size:14px}
+.bars i{display:block;height:10px;border-radius:999px;background:var(--magenta)}
+.bars b{font:500 13px var(--mono)}
 /* session stopwatch */
 .sw{display:flex;align-items:center;gap:6px;flex:none}
 .swgo{height:44px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font:500 16px var(--mono);font-variant-numeric:tabular-nums;display:flex;align-items:center;gap:8px;transition:border-color .12s}
@@ -266,7 +296,8 @@ a{color:var(--acc)}
     <div class="seg tabs" id="tabs" role="tablist"></div>
   </div>
   <main id="main"></main>
-  <input type="file" id="importfile" accept=".json,application/json" hidden>
+  <input type="file" id="importfile" accept=".json,.txt,application/json,text/plain" hidden>
+  <input type="file" id="photofile" accept="image/*" hidden>
 </div>
 
 <script>
@@ -344,6 +375,7 @@ var TABS=[["lift","Lift"],["mob","Mobility"],["body","Body"],["quit","Quit"],["m
 var logs={},body={},targets={},targetsAt=0,dirty={},pick={};
 var db=null,dl=null,flushing=false,timer=null,armed="",localOk=true,cloud="none",note=null;
 var cur=iso(new Date()),tab="lift";
+var notes={},soccer={},meta={lastBackup:0,snooze:0},photos={},viewPhoto="",craveTrig="";
 var quit={start:"",perDay:null,packPrice:null,packSize:20,goalName:"",goalCost:null,at:0},qlog=[],qEdit=false,crave=0,quitInt=null,tipIx=0,qMsg="";
 var $=function(id){return document.getElementById(id)};
 var main=$("main");
@@ -360,9 +392,9 @@ function key(date,sid){return date+"_"+sid}
 
 /* ---------- storage: this tablet first, online copy second ---------- */
 var LS="hgl2";
-function snapshot(){return {logs:logs,body:body,targets:targets,targetsAt:targetsAt,quit:quit,qlog:qlog,times:times,dirty:Object.keys(dirty)}}
+function snapshot(){return {logs:logs,body:body,targets:targets,targetsAt:targetsAt,quit:quit,qlog:qlog,times:times,notes:notes,soccer:soccer,meta:meta,dirty:Object.keys(dirty)}}
 function saveLocal(){try{localStorage.setItem(LS,JSON.stringify(snapshot()));localOk=true}catch(e){localOk=false}showStatus()}
-function loadLocal(){try{var s=JSON.parse(localStorage.getItem(LS)||"null");if(s){logs=s.logs||{};body=s.body||{};targets=s.targets||{};targetsAt=s.targetsAt||0;if(s.quit)quit=s.quit;if(s.qlog)qlog=s.qlog;if(s.times)times=s.times;(s.dirty||[]).forEach(function(p){dirty[p]=1})}}catch(e){localOk=false}}
+function loadLocal(){try{var s=JSON.parse(localStorage.getItem(LS)||"null");if(s){logs=s.logs||{};body=s.body||{};targets=s.targets||{};targetsAt=s.targetsAt||0;if(s.quit)quit=s.quit;if(s.qlog)qlog=s.qlog;if(s.times)times=s.times;if(s.notes)notes=s.notes;if(s.soccer)soccer=s.soccer;if(s.meta)meta=s.meta;(s.dirty||[]).forEach(function(p){dirty[p]=1})}}catch(e){localOk=false}}
 function showStatus(){var el=$("status");el.hidden=localOk;el.textContent="Not saved";el.className="chip err"}
 function dataFor(p){var i=p.indexOf("/"),c=p.slice(0,i),id=p.slice(i+1);
   if(c==="config")return {sets:targets,at:targetsAt};
@@ -398,6 +430,19 @@ function pull(){
   },function(){cloud="err";showStatus()})
 }
 
+/* ---------- progress photos live in IndexedDB, which has room for images ---------- */
+var idb=null;
+function idbOpen(cb){try{var r=indexedDB.open("gymlog",1);r.onupgradeneeded=function(){r.result.createObjectStore("photos",{keyPath:"date"})};r.onsuccess=function(){idb=r.result;cb()};r.onerror=function(){cb()}}catch(e){cb()}}
+function idbPut(p){if(!idb)return;try{idb.transaction("photos","readwrite").objectStore("photos").put(p)}catch(e){}}
+function idbDel(date){if(!idb)return;try{idb.transaction("photos","readwrite").objectStore("photos").delete(date)}catch(e){}}
+function loadPhotos(){idbOpen(function(){if(!idb)return;try{var q=idb.transaction("photos").objectStore("photos").getAll();q.onsuccess=function(){(q.result||[]).forEach(function(p){photos[p.date]=p});if(tab==="body")render()}}catch(e){}})}
+function addPhoto(file){
+  var url=URL.createObjectURL(file),img=new Image();
+  img.onload=function(){var m=1200,sc=Math.min(1,m/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=Math.round(img.width*sc);c.height=Math.round(img.height*sc);
+    c.getContext("2d").drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);
+    var p={date:cur,data:c.toDataURL("image/jpeg",.82),at:Date.now()};photos[cur]=p;idbPut(p);render()};
+  img.onerror=function(){URL.revokeObjectURL(url)};img.src=url}
+
 /* ---------- log model ---------- */
 function prevSets(ex,sid,date){var best=null,bd="";
   for(var k in logs){var l=logs[k];if(l.session!==sid||!(l.date<date)||!l.sets||!l.sets[ex.id])continue;
@@ -420,8 +465,12 @@ function progress(date,sid){var l=logs[key(date,sid)],a=0,t=0,any=false;
   ROUTINES[sid].ex.forEach(function(ex){if(ex.opt)return;var s=l&&l.sets&&l.sets[ex.id];
     if(s){var x=tally(s);a+=x.a;t+=x.t;if(s.some(function(q){return q.a!=null}))any=true}else t+=ex.lo*ex.sets});
   return {pct:t?Math.round(100*a/t):0,any:any}}
+function soccerDay(date){if(pick[date])return pick[date]==="soccer";
+  var lifted=LIFTS.some(function(x){return !!logs[key(date,x)]});
+  return (soccerDone(date)&&!lifted)||(!liftFor(date)&&WEEK[dow(date)][1]==="Soccer")}
+function soccerDone(date){var g=soccer[date];return !!(g&&(g.min||g.rpe||g.goals||g.assists))}
 function liftFor(date){
-  if(pick[date])return pick[date];
+  if(pick[date]&&pick[date]!=="soccer")return pick[date];if(pick[date]==="soccer")return "";
   for(var i=0;i<LIFTS.length;i++)if(logs[key(date,LIFTS[i])])return LIFTS[i];
   return WEEK[dow(date)][2]}
 function nextUp(sid,date){var a=ROUTINES[sid].ex;for(var i=0;i<a.length;i++)if(!a[i].opt&&!isDone(a[i],sid,date))return a[i].id;return ""}
@@ -435,7 +484,7 @@ function renderTop(){
     h+='<button type="button" class="day'+(d===cur?" sel":"")+(sid?"":" off")+'" data-date="'+d+'" aria-label="'+DAYNAME[i]+" "+parse(d).getDate()+'">'+
       '<span class="d1"><span>'+w[0]+(d===today?" &bull;":"")+'</span><span>'+parse(d).getDate()+'</span></span>'+
       '<span class="d2">'+esc(sid?ROUTINES[sid].name:w[1])+'</span>'+
-      '<span class="meter"><i style="width:'+(p?p.pct:0)+'%"></i></span>'+
+      '<span class="meter"><i style="width:'+(p?p.pct:soccerDone(d)?100:0)+'%"></i></span>'+
       '<span class="dots"><span class="'+(mb?"on":"")+'">MOB</span><span class="'+(pf?"on":"")+'">PF</span></span></button>'}
   $("week").innerHTML=h;
   $("tabs").innerHTML=TABS.map(function(t){return '<button type="button" role="tab" data-tab="'+t[0]+'" aria-selected="'+(tab===t[0])+'">'+t[1]+'</button>'}).join("")
@@ -453,6 +502,26 @@ function ytTile(ex){var id=ex.video.split("&")[0];
    '<a class="ytopen" href="https://www.youtube.com/watch?v='+ex.video+'" target="_blank" rel="noopener">Open in YouTube</a>'}
 function footHtml(ex,sets){var x=tally(sets);
   return '<div class="meter'+(x.a<x.t?" short":"")+'"><i style="width:'+(x.t?Math.round(100*x.a/x.t):0)+'%"></i></div><span>'+x.a+" / "+x.t+" "+ex.unit+'</span>'}
+function history(ex,sid){var out=[];
+  for(var k in logs){var l=logs[k];if(l.session!==sid||l.date>cur||!l.sets||!l.sets[ex.id])continue;
+    var reps=0,vol=0,any=false;l.sets[ex.id].forEach(function(q){if(q.a!=null){any=true;reps+=q.a;vol+=q.a*(q.w||0)}});
+    if(any)out.push({date:l.date,reps:reps,vol:vol})}
+  return out.sort(function(a,b){return a.date<b.date?-1:1}).slice(-8)}
+function trendHtml(ex,sid){
+  if(LIFTS.indexOf(sid)<0)return "";var h=history(ex,sid);if(h.length<2)return "";
+  var useVol=h.some(function(p){return p.vol>0}),vals=h.map(function(p){return useVol?p.vol:p.reps});
+  var mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals),W=120,H=30,pts=vals.map(function(v,i){return [4+(W-8)*i/(vals.length-1),mx===mn?H/2:H-4-(H-8)*(v-mn)/(mx-mn)]});
+  var first=vals[0],lastv=vals[vals.length-1],diff=Math.round((lastv-first)*10)/10;
+  return '<div class="trend"><svg viewBox="0 0 '+W+" "+H+'" role="img" aria-label="Trend over the last '+h.length+' sessions"><polyline points="'+pts.map(function(p){return p[0].toFixed(1)+","+p[1].toFixed(1)}).join(" ")+'" fill="none" stroke="var(--acc)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><circle cx="'+pts[pts.length-1][0].toFixed(1)+'" cy="'+pts[pts.length-1][1].toFixed(1)+'" r="3.5" fill="var(--acc)"/></svg>'+
+   '<span><b>'+Math.round(lastv)+(useVol?" kg":" reps")+'</b> '+(diff===0?"level":(diff>0?"up ":"down ")+Math.abs(Math.round(diff)))+" over "+h.length+" sessions</span></div>"}
+function suggest(ex,sid){
+  if(LIFTS.indexOf(sid)<0||ex.opt)return null;
+  var l=logs[key(cur,sid)];if(l&&l.sets&&l.sets[ex.id])return null;
+  var prev=prevSets(ex,sid,cur);if(!prev||prev.length<ex.sets)return null;
+  if(prev.every(function(q){return q.a!=null&&q.a>=ex.hi}))return {label:(ex.kg?"Go up a weight, restart at ":"Add load, restart at ")+ex.lo,t:prev.map(function(){return ex.lo})};
+  if(prev.every(function(q){return q.a!=null&&q.a>=q.t})){var t=prev.map(function(q){return Math.min(ex.hi,q.t+1)});
+    if(t.some(function(v,i){return v>prev[i].t}))return {label:"Aim for "+Math.max.apply(null,t)+" today",t:t}}
+  return null}
 function card(ex,sid,n,nx){
   var sets=viewSets(ex,sid,cur),prev=prevSets(ex,sid,cur),done=tally(sets).full===sets.length;
   var goal=ex.sets+" × "+(ex.lo===ex.hi?ex.lo:ex.lo+" to "+ex.hi)+(ex.unit==="reps"?"":" "+ex.unit)+(ex.side?" "+ex.side:"");
@@ -463,7 +532,7 @@ function card(ex,sid,n,nx){
    '<article class="ex'+(ex.kg?"":" nokg")+(done?" done":"")+(nx===ex.id?" next":"")+'" data-ex="'+ex.id+'" data-sid="'+sid+'" data-n="'+pad(n)+'">'+
    '<div class="exhead"><div class="badge">'+(done?"&#10003;":pad(n))+'</div><div class="extitle"><div class="exh"><h3>'+esc(ex.name)+'</h3></div>'+
    '<div class="meta"><span class="goal">'+goal+'</span><span class="tag up">Up next</span>'+(ex.opt?'<span class="tag">Optional</span>':"")+'<span class="eq">'+esc(ex.eq)+'</span></div></div></div>'+
-   '<div class="exbody">'+(ex.media?'<div class="demo" role="img" aria-label="'+esc(ex.name)+' demonstration" style="background-image:url(media/'+ex.id+'.jpg)"></div>':ex.video?ytTile(ex):"")+last+
+   '<div class="exbody">'+(ex.media?'<div class="demo" role="img" aria-label="'+esc(ex.name)+' demonstration" style="background-image:url(media/'+ex.id+'.jpg)"></div>':ex.video?ytTile(ex):"")+last+trendHtml(ex,sid)+(suggest(ex,sid)?'<button type="button" class="sug" data-sug="1">'+esc(suggest(ex,sid).label)+'</button>':"")+
    '<div class="sets"><div class="sethead"><span>Set</span><span class="ht">Target</span><span>Actual</span>'+(ex.kg?"<span>kg</span>":"")+'</div>'+
    sets.map(function(s,i){return setRow(ex,s,i)}).join("")+'</div>'+
    '<div class="foot">'+footHtml(ex,sets)+'</div></div></article>'}
@@ -472,11 +541,25 @@ function routineHtml(sid){
   return '<section data-routine="'+sid+'"><div class="head"><div class="headrow"><h2>'+esc(r.name)+'</h2><span class="total"><span class="pct">'+p.pct+'</span>% <small>of target</small></span></div>'+
    '<div class="big"><i style="width:'+p.pct+'%"></i></div></div>'+
    '<div class="list">'+r.ex.map(function(ex,i){return card(ex,sid,i+1,nx)}).join("")+'</div></section>'}
+function nudgeHtml(){
+  var n=0,seen={},k;for(k in logs)if((logs[k].at||0)>meta.lastBackup&&!seen[logs[k].date]){seen[logs[k].date]=1;n++}
+  if(n<5||Date.now()<(meta.snooze||0))return "";
+  return '<div class="nudge"><span><b class="mono">'+n+'</b> training days since your last backup. This tablet holds the only copy.</span><button type="button" id="backupnow">Back up now</button><button type="button" class="ghost" id="backuplater">Later</button></div>'}
+function soccerHtml(){
+  var g=soccer[cur]||{},tot={n:0,min:0,goals:0,assists:0},k;
+  for(k in soccer)if(soccerDone(k)){tot.n++;tot.min+=soccer[k].min||0;tot.goals+=soccer[k].goals||0;tot.assists+=soccer[k].assists||0}
+  function f(id,lbl,v,max){return '<label><span class="lbl">'+lbl+'</span><input class="soc" id="s_'+id+'" data-f="'+id+'" type="number" inputmode="numeric" min="0"'+(max?' max="'+max+'"':"")+' placeholder="0" value="'+(v!=null?v:"")+'"></label>'}
+  function stat(lbl,v){return '<div class="stat"><span class="lbl">'+lbl+'</span><b>'+v+'</b></div>'}
+  return '<div class="head"><div class="headrow"><h2>Soccer</h2></div></div><div class="stack">'+
+   '<div class="panel"><h3>Game on <span class="mono">'+nice(cur)+'</span></h3><div class="form">'+f("min","Minutes played",g.min)+f("rpe","Effort, 1 to 10",g.rpe,10)+f("goals","Goals",g.goals)+f("assists","Assists",g.assists)+'</div></div>'+
+   '<div class="panel"><h3>All games</h3><div class="stats">'+stat("Games",tot.n)+stat("Goals",tot.goals)+stat("Assists",tot.assists)+stat("Minutes",tot.min)+'</div></div></div>'}
+function notesHtml(){return '<div class="stack"><div class="panel"><h3>Notes for <span class="mono">'+nice(cur)+'</span></h3><textarea id="daynote" placeholder="Sore shoulder, bad sleep, weight felt easy">'+esc(notes[cur]?notes[cur].text:"")+'</textarea></div></div>'}
 function liftHtml(){
-  var sid=liftFor(cur),w=WEEK[dow(cur)];
-  var chips='<div class="seg pick">'+LIFTS.map(function(s){return '<button type="button" data-pick="'+s+'" aria-pressed="'+(s===sid)+'">'+ROUTINES[s].name+'</button>'}).join("")+'</div>';
-  if(!sid)return chips+'<div class="head"><h2>'+DAYNAME[dow(cur)]+": "+esc(w[1])+'</h2></div>';
-  return chips+routineHtml(sid)}
+  var sid=liftFor(cur),w=WEEK[dow(cur)],soc=soccerDay(cur);
+  var chips='<div class="seg pick pick4">'+LIFTS.map(function(s){return '<button type="button" data-pick="'+s+'" aria-pressed="'+(!soc&&s===sid)+'">'+ROUTINES[s].name+'</button>'}).join("")+'<button type="button" data-pick="soccer" aria-pressed="'+soc+'">Soccer</button></div>';
+  if(soc)return nudgeHtml()+chips+soccerHtml()+notesHtml();
+  if(!sid)return nudgeHtml()+chips+'<div class="head"><h2>'+DAYNAME[dow(cur)]+": "+esc(w[1])+'</h2></div>'+notesHtml();
+  return nudgeHtml()+chips+routineHtml(sid)+notesHtml()}
 function bodyRows(){return Object.keys(body).map(function(k){return body[k]}).filter(function(r){return !r.deleted}).sort(function(a,b){return a.date<b.date?-1:1})}
 function chartHtml(rows){
   var pts=rows.filter(function(r){return r.weightKg!=null});
@@ -493,6 +576,14 @@ function chartHtml(rows){
   function lab(p){var d=parse(p.date);return d.getDate()+" "+MON[d.getMonth()]}
   var xl='<text x="'+l+'" y="'+(H-8)+'" fill="var(--text-dim)" font-size="11" font-family="var(--mono)">'+lab(pts[0])+'</text>'+(pts.length>1?'<text x="'+(W-r)+'" y="'+(H-8)+'" text-anchor="end" fill="var(--text-dim)" font-size="11" font-family="var(--mono)">'+lab(pts[pts.length-1])+'</text>':"");
   return '<svg class="chart" viewBox="0 0 '+W+" "+H+'" role="img" aria-label="Body weight in kg over time">'+g+(pts.length>1?'<path d="'+path+'" fill="none" stroke="var(--violet)" stroke-width="2" stroke-linejoin="round"/>':"")+dots+xl+'</svg>'}
+function photoList(){return Object.keys(photos).map(function(k){return photos[k]}).sort(function(a,b){return a.date<b.date?-1:1})}
+function photosHtml(){
+  var list=photoList(),last=list[list.length-1],due=!last||(parse(iso(new Date()))-parse(last.date))/864e5>=7;
+  var cmp=list.length>1?'<div class="compare"><figure><img src="'+list[0].data+'" alt="First photo"><figcaption>'+nice(list[0].date)+'</figcaption></figure><figure><img src="'+last.data+'" alt="Latest photo"><figcaption>'+nice(last.date)+'</figcaption></figure></div>':"";
+  return '<div class="panel"><h3>Progress photos</h3>'+cmp+
+   '<div class="btns"><button type="button" class="go'+(due?"":" ghost")+'" id="addphoto">'+(due?"Take this week's photo":"Add a photo")+'</button><span class="eq" style="align-self:center">'+(last?"Last one "+nice(last.date):"Same spot, same light, once a week")+'</span></div>'+
+   (list.length?'<div class="photos">'+list.slice().reverse().map(function(p){return '<button type="button" data-photo="'+p.date+'"><img src="'+p.data+'" alt="Photo from '+nice(p.date)+'" loading="lazy"><span>'+nice(p.date)+'</span></button>'}).join("")+'</div>':"")+'</div>'+
+   (viewPhoto&&photos[viewPhoto]?'<div class="viewer" id="viewer"><img src="'+photos[viewPhoto].data+'" alt="Photo from '+nice(viewPhoto)+'"><div><button type="button" class="go" id="closephoto">Close</button><button type="button" class="go ghost" data-delphoto="'+viewPhoto+'">'+(armed==="p"+viewPhoto?"Tap again to remove":"Remove")+'</button></div></div>':"")}
 function bodyHtml(){
   var rows=bodyRows(),lastH=null,lw=null,fw=null;
   rows.forEach(function(r){if(r.heightCm!=null)lastH=r.heightCm;if(r.weightKg!=null){if(fw==null)fw=r.weightKg;lw=r.weightKg}});
@@ -511,6 +602,7 @@ function bodyHtml(){
     stat("BMI",bmi,"")+'</div>'+
     '<p class="eq" style="margin:12px 0 0">BMI cannot tell muscle from fat, so read it next to the mirror and the lifting numbers.</p></div>'+
    '<div class="panel"><h3>Weight over time</h3>'+chartHtml(rows)+'</div>'+
+   photosHtml()+
    '<div class="panel"><h3>Entries</h3>'+(rows.length?'<div class="rows">'+rows.slice().reverse().map(function(r){
      return '<div class="row"><span>'+nice(r.date)+'</span><span>'+(r.weightKg!=null?r.weightKg+" kg":"")+'</span><span>'+(r.heightCm!=null?r.heightCm+" cm":"")+'</span><button type="button" data-del="'+r.date+'" class="'+(armed===r.date?"armed":"")+'">'+(armed===r.date?"Tap again":"Remove")+'</button></div>'}).join("")+'</div>'
      :'<p class="empty">No entries yet. Put your weight and height in the form and save, and the first row lands here.</p>')+'</div>'+
@@ -518,8 +610,9 @@ function bodyHtml(){
 function moreHtml(){
   return '<div class="head"><div class="headrow"><h2>More</h2></div></div>'+
   '<div class="stack">'+
+   '<p class="eq mono" style="margin:0">'+(meta.lastBackup?"Last backup "+nice(iso(new Date(meta.lastBackup))):"No backup yet")+'</p>'+
    '<div class="panel"><h3>Your data</h3>'+
-    '<div class="btns"><button type="button" class="go" id="export">Save backup file</button><button type="button" class="go ghost" id="import">Restore from file</button></div>'+
+    '<div class="btns"><button type="button" class="go" id="sharebackup">Send backup to laptop</button><button type="button" class="go ghost" id="export">Save backup file</button><button type="button" class="go ghost" id="import">Restore from file</button></div>'+
     '<p class="msg'+(note&&note.bad?" bad":"")+'" id="note">'+(note?esc(note.text):"")+'</p></div>'+
    '<div class="panel"><h3>Week</h3><dl class="sched">'+WEEK.map(function(w,i){return '<dt>'+w[0]+'</dt><dd>'+esc(w[1])+(i===1||w[2]?", then the hips and hamstrings block":"")+'</dd>'}).join("")+'</dl></div>'+
   '</div>'}
@@ -548,11 +641,20 @@ function qSetupHtml(st){
    '<label><span class="lbl">Reward price, $</span><input id="q_goalcost" type="number" inputmode="decimal" min="0" step="1" placeholder="0" value="'+v(quit.goalCost)+'"></label>'+
    '<label class="full"><span class="lbl">Reward you are saving for</span><input id="q_goal" type="text" maxlength="60" placeholder="Something you actually want" value="'+esc(quit.goalName||"")+'"></label>'+
    '<button class="go full" type="submit">'+(st?"Save details":"Start counting")+'</button></div></form>'}
+var TRIGS=["Coffee","After a meal","Stress","Boredom","Alcohol","Driving","Around smokers","Other"];
+function patternsHtml(){
+  var ev=qlog.filter(function(e){return e.type==="won"||e.type==="slip"});if(ev.length<3)return "";
+  var byT={},byH=[["Morning",0],["Afternoon",0],["Evening",0],["Night",0]],mx=1;
+  ev.forEach(function(e){if(e.trig)byT[e.trig]=(byT[e.trig]||0)+1;var h=new Date(e.t).getHours();byH[h>=5&&h<12?0:h>=12&&h<17?1:h>=17&&h<22?2:3][1]++});
+  function bars(rows){var m=Math.max.apply(null,rows.map(function(r){return r[1]}).concat([1]));return '<div class="bars">'+rows.map(function(r){return '<span>'+r[0]+'</span><i style="width:'+Math.max(4,r[1]/m*100)+'%"></i><b>'+r[1]+'</b>'}).join("")+'</div>'}
+  var tr=Object.keys(byT).map(function(k){return [k,byT[k]]}).sort(function(a,b){return b[1]-a[1]});
+  return '<div class="panel"><h3>When cravings hit</h3>'+bars(byH)+(tr.length?'<h3 style="margin-top:16px">What sets them off</h3>'+bars(tr):"")+'</div>'}
 function craveHtml(){
   if(!crave)return '<div class="panel crave"><h3>Craving right now?</h3><p>A craving usually passes in a few minutes. Start the clock, do the thing it tells you, and let it pass.</p>'+
     '<div class="btns"><button type="button" class="go" data-q="crave">Start the 3 minute clock</button><button type="button" class="go ghost" data-q="slip">I smoked one</button></div>'+
     '<p class="msg" id="q_msg">'+esc(qMsg)+'</p>'+(qlog.length?'<button type="button" class="linkbtn" data-q="undo">Undo last entry</button>':"")+'</div>';
   return '<div class="panel crave"><h3>Ride it out</h3><div class="cclock" id="q_crave"></div><p class="ctip" id="q_tip">'+esc(TIPS[tipIx%TIPS.length])+'</p>'+
+    '<div class="trigs" role="group" aria-label="What set it off">'+TRIGS.map(function(t){return '<button type="button" data-trig="'+t+'" aria-pressed="'+(craveTrig===t)+'">'+t+'</button>'}).join("")+'</div>'+
     '<div class="btn3"><button type="button" class="go" data-q="won">Beat it</button><button type="button" class="go ghost" data-q="tip">Another idea</button><button type="button" class="go ghost" data-q="slip">I smoked one</button></div></div>'}
 function quitHtml(){
   var now=Date.now(),st=qStats(now);
@@ -577,7 +679,7 @@ function quitHtml(){
     '<div class="stat"><span class="lbl">Cravings beaten</span><b>'+st.won+'</b></div>'+
     '<div class="stat"><span class="lbl">Slips</span><b>'+st.slips+'</b></div></div>'+
     (st.daily?'<p class="eq" style="margin:12px 0 0">Staying quit is worth <span class="mono">'+money(st.daily*7)+'</span> a week, <span class="mono">'+money(st.daily*30)+'</span> a month and <span class="mono">'+money(st.daily*365)+'</span> a year.</p>':"")+'</div>'+
-   craveHtml()+goal+
+   craveHtml()+patternsHtml()+goal+
    '<div class="panel"><h3>What your body is doing</h3><div class="miles">'+miles+'</div><p class="eq" style="margin:14px 0 0">Timeline from the World Health Organization fact sheet on quitting tobacco, counted from your quit date.</p></div>'+
    '<div class="panel"><h3>Backup</h3><p style="margin:0">Quitline is free and confidential on <span class="mono">13 7848</span>. A GP or pharmacist can set you up with patches, gum or other quitting medicines, which take the edge off cravings.</p></div>'+
    '<button type="button" class="linkbtn" data-q="edit">Change quit details</button></div>'}
@@ -593,10 +695,10 @@ function qAction(a){
   var now=Date.now();
   if(a==="edit"){qEdit=true}
   else if(a==="cancel"){qEdit=false}
-  else if(a==="crave"){crave=now+180000;tipIx=Math.floor(Math.random()*TIPS.length);qMsg=""}
+  else if(a==="crave"){craveTrig="";crave=now+180000;tipIx=Math.floor(Math.random()*TIPS.length);qMsg=""}
   else if(a==="tip"){tipIx++;$("q_tip").textContent=TIPS[tipIx%TIPS.length];return}
-  else if(a==="won"){qlog.push({t:now,type:"won"});crave=0;qMsg="Craving beaten and logged. That is one more it does not get."}
-  else if(a==="slip"){qlog.push({t:now,type:"slip",n:1});crave=0;qMsg="Logged. One slip is not a relapse. The streak restarts now and everything you skipped still counts."}
+  else if(a==="won"){qlog.push({t:now,type:"won",trig:craveTrig});crave=0;qMsg="Craving beaten and logged. That is one more it does not get."}
+  else if(a==="slip"){qlog.push({t:now,type:"slip",n:1,trig:crave?craveTrig:""});crave=0;qMsg="Logged. One slip is not a relapse. The streak restarts now and everything you skipped still counts."}
   else if(a==="undo"){qlog.pop();qMsg="Last entry removed."}
   quit.at=now;saveLocal();render()}
 function qSave(){
@@ -632,6 +734,7 @@ function calRender(){
   var el=$("cal");el.hidden=!calOpen;$("curdate").setAttribute("aria-expanded",calOpen);if(!calOpen)return;
   var p=calMonth.split("-"),y=+p[0],m=+p[1]-1,first=new Date(y,m,1),lead=(first.getDay()+6)%7,days=new Date(y,m+1,0).getDate(),today=iso(new Date()),has={},k;
   for(k in logs){var l=logs[k],any=false;for(var e in l.sets||{})if(l.sets[e].some(function(s){return s.a!=null}))any=true;if(any)has[l.date]=1}
+  for(k in soccer)if(soccerDone(k))has[k]=1;
   var h='<div class="calhead"><button type="button" data-cal="-1" aria-label="Previous month">&lsaquo;</button><b>'+MONTHS[m]+" "+y+'</b><button type="button" data-cal="1" aria-label="Next month">&rsaquo;</button></div><div class="calgrid">';
   ["M","T","W","T","F","S","S"].forEach(function(d){h+="<span>"+d+"</span>"});
   for(var i=0;i<lead;i++)h+="<i></i>";
@@ -666,14 +769,20 @@ function commit(row,field,val){
   refresh(cardEl,ex,sid);
   if(field==="a"&&before==null&&val!=null&&LIFTS.indexOf(sid)>=0&&!ex.opt)startRest(ROUTINES[sid].ex.indexOf(ex)<3?120:75)}
 function say(text,bad){note={text:text,bad:!!bad};var el=$("note");if(el){el.textContent=text;el.className="msg"+(bad?" bad":"")}}
+function backupData(){return JSON.stringify({app:"home-gym-log",v:2,exported:new Date().toISOString(),logs:logs,body:body,targets:targets,targetsAt:targetsAt,quit:quit,qlog:qlog,times:times,notes:notes,soccer:soccer,photos:photos},null,1)}
+function backedUp(msg){meta.lastBackup=Date.now();meta.snooze=0;saveLocal();note={text:msg};render()}
 function doExport(){
   try{
-    var data=JSON.stringify({app:"home-gym-log",v:1,exported:new Date().toISOString(),logs:logs,body:body,targets:targets,targetsAt:targetsAt,quit:quit,qlog:qlog,times:times},null,1);
-    var url=URL.createObjectURL(new Blob([data],{type:"application/json"})),a=document.createElement("a");
+    var url=URL.createObjectURL(new Blob([backupData()],{type:"application/json"})),a=document.createElement("a");
     a.href=url;a.download="home-gym-log-"+iso(new Date())+".json";document.body.appendChild(a);a.click();a.remove();
     setTimeout(function(){URL.revokeObjectURL(url)},4000);
-    say("Backup file sent to your Downloads folder.")
+    backedUp("Backup file sent to your Downloads folder.")
   }catch(e){say("The backup file could not be saved.",true)}}
+function doShare(){
+  var data=backupData(),name="home-gym-log-"+iso(new Date()),files=[new File([data],name+".json",{type:"application/json"}),new File([data],name+".txt",{type:"text/plain"})],f=null;
+  try{for(var i=0;i<files.length&&!f;i++)if(navigator.canShare&&navigator.canShare({files:[files[i]]}))f=files[i]}catch(e){}
+  if(!f){doExport();return}
+  navigator.share({files:[f],title:"Home Gym Log backup"}).then(function(){backedUp("Backup handed to the share sheet.")},function(e){if(!e||e.name!=="AbortError")doExport()})}
 function doImport(file){
   var fr=new FileReader();
   fr.onload=function(){try{var d=JSON.parse(fr.result);if(!d||d.app!=="home-gym-log")throw 0;
@@ -683,11 +792,17 @@ function doImport(file){
       if((d.targetsAt||0)>targetsAt){targets=d.targets||{};targetsAt=d.targetsAt;dirty["config/targets"]=1}
       if(d.quit&&(d.quit.at||0)>(quit.at||0)){quit=d.quit;qlog=d.qlog||[]}
       for(id in d.times||{}){if(!times[id]||(d.times[id].at||0)>(times[id].at||0))times[id]=d.times[id]}
+      for(id in d.notes||{}){if(!notes[id]||(d.notes[id].at||0)>(notes[id].at||0))notes[id]=d.notes[id]}
+      for(id in d.soccer||{}){if(!soccer[id]||(d.soccer[id].at||0)>(soccer[id].at||0))soccer[id]=d.soccer[id]}
+      for(id in d.photos||{}){if(!photos[id]||(d.photos[id].at||0)>(photos[id].at||0)){photos[id]=d.photos[id];idbPut(photos[id])}}
       saveLocal();note={text:"Restored "+n+" newer entries from the file."};render();if(db){cloud="saving";showStatus();flush()}
     }catch(e){say("That file is not a Home Gym Log backup.",true)}};
   fr.onerror=function(){say("That file could not be read.",true)};
   fr.readAsText(file)}
-main.addEventListener("input",function(e){var inp=e.target,row=inp.closest&&inp.closest(".set");if(!row)return;
+main.addEventListener("input",function(e){var inp=e.target,row=inp.closest&&inp.closest(".set");
+  if(inp.id==="daynote"){notes[cur]={text:inp.value,at:Date.now()};saveLocal();return}
+  if(inp.classList&&inp.classList.contains("soc")){var g=soccer[cur]||(soccer[cur]={});g[inp.dataset.f]=num(inp.value);g.at=Date.now();saveLocal();renderTop();return}
+  if(!row)return;
   commit(row,inp.classList.contains("t")?"t":inp.classList.contains("a")?"a":"w",num(inp.value))});
 main.addEventListener("click",function(e){
   var pl=e.target.closest("button.yt");
@@ -699,11 +814,21 @@ main.addEventListener("click",function(e){
     var cardEl=row.closest(".ex"),ex=findEx(cardEl.dataset.sid,cardEl.dataset.ex),stp=ex.unit==="s"?5:1,v=num(a.value);
     v=v==null?(d>0?t:Math.max(0,t-stp)):Math.max(0,v+d*stp);a.value=v;commit(row,"a",v);return}
   if(b.dataset.q){qAction(b.dataset.q);return}
+  if(b.dataset.trig){craveTrig=craveTrig===b.dataset.trig?"":b.dataset.trig;b.parentNode.querySelectorAll("button").forEach(function(x){x.setAttribute("aria-pressed",x.dataset.trig===craveTrig)});return}
+  if(b.dataset.sug){var c2=b.closest(".ex"),sid2=c2.dataset.sid,ex2=findEx(sid2,c2.dataset.ex),sg=suggest(ex2,sid2);if(!sg)return;
+    var own=ownSets(ex2,sid2,cur);own.forEach(function(q,i){q.t=sg.t[i]});targets[ex2.id]=sg.t.slice();targetsAt=Date.now();mark("config/targets");mark("logs/"+key(cur,sid2));render();return}
+  if(b.id==="addphoto"){$("photofile").click();return}
+  if(b.dataset.photo){viewPhoto=b.dataset.photo;armed="";render();return}
+  if(b.id==="closephoto"){viewPhoto="";armed="";render();return}
+  if(b.dataset.delphoto){var pd=b.dataset.delphoto;if(armed==="p"+pd){delete photos[pd];idbDel(pd);viewPhoto="";armed=""}else armed="p"+pd;render();return}
+  if(b.id==="backupnow"||b.id==="sharebackup"){doShare();return}
+  if(b.id==="backuplater"){meta.snooze=Date.now()+864e5;saveLocal();render();return}
   if(b.dataset.pick){pick[cur]=b.dataset.pick;render();return}
   if(b.dataset.del){var id=b.dataset.del;if(armed===id){body[id]={date:id,deleted:true,at:Date.now()};armed="";mark("body/"+id)}else armed=id;render();return}
   if(b.id==="export"){doExport();return}
   if(b.id==="import"){$("importfile").click();return}
 });
+$("photofile").addEventListener("change",function(){if(this.files&&this.files[0])addPhoto(this.files[0]);this.value=""});
 $("importfile").addEventListener("change",function(){if(this.files&&this.files[0])doImport(this.files[0]);this.value=""});
 main.addEventListener("submit",function(e){e.preventDefault();
   if(e.target.id==="quitform"){qSave();return}
@@ -736,7 +861,7 @@ window.addEventListener("pagehide",saveLocal);
 setInterval(function(){if(document.visibilityState==="visible")main.classList.toggle("f2")},1100);
 
 /* ---------- boot ---------- */
-loadLocal();render();showStatus();
+loadLocal();render();showStatus();loadPhotos();
 if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("./sw.js").catch(function(){})})}
 })();
 </script>
