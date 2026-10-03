@@ -3,5 +3,6 @@
  <linearGradient id="neon" x1="90" y1="90" x2="420" y2="420" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#5EEBFF"/><stop offset=".5" stop-color="#22D3EE"/><stop offset="1" stop-color="#A78BFA"/></linearGradient>
  <linearGradient id="hot" x1="100" y1="400" x2="420" y2="110" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#A78BFA"/><stop offset=".55" stop-color="#F0459B"/><stop offset="1" stop-color="#FB7185"/></linearGradient>
  <filter id="glow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="22"/></filter>
-</defs><rect width="512" height="512" fill="url(#bg)"/><g transform="translate(256 256) scale(1) translate(-256 -256)"><path d="M 344.3 157.9 A 132 132 0 1 0 388.0 256.0 L 268 256" fill="none" stroke="#22D3EE" stroke-width="60" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)" opacity=".35"/>
-   <path d="M 344.3 157.9 A 132 132 0 1 0 388.0 256.0 L 268 256" fill="none" stroke="url(#neon)" stroke-width="60" stroke-linecap="round" stroke-linejoin="round"/></g></svg>
+</defs><rect width="512" height="512" fill="url(#bg)"/><g transform="translate(256 256) scale(1) translate(-256 -256)"><g stroke="#F0459B" filter="url(#glow)" opacity=".4"><g transform="rotate(-32 256 256)" fill="none" stroke-linecap="round" stroke-width="40">
+     <path d="M196 256 H316"/><path d="M178 176 V336"/><path d="M334 176 V336"/><path d="M118 212 V300"/><path d="M394 212 V300"/></g></g><g stroke="url(#hot)"><g transform="rotate(-32 256 256)" fill="none" stroke-linecap="round" stroke-width="40">
+     <path d="M196 256 H316"/><path d="M178 176 V336"/><path d="M334 176 V336"/><path d="M118 212 V300"/><path d="M394 212 V300"/></g></g></g></svg>
