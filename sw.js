@@ -1,5 +1,5 @@
 // Home Gym Log service worker. Bump VERSION whenever index.html changes so tablets pick up the new build.
-const VERSION = "gymlog-v1";
+const VERSION = "gymlog-v2";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png"];
 
 self.addEventListener("install", (event) => {
