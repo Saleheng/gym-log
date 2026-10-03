@@ -224,6 +224,11 @@ a{color:var(--acc)}
 .moves{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .moves button{height:44px;padding:0 14px;border-radius:6px;border:1px solid var(--line);background:var(--raised);font:500 14px var(--mono)}
 .moves button:hover{border-color:var(--acc)}
+section[data-routine="mob"]{--acc:var(--magenta)}
+section[data-routine="floor"]{--acc:var(--violet)}
+.blk{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:28px 0 0;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.blk h2{font:600 26px/1.1 var(--cond);margin:0;color:var(--acc)}
+.blk span{font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);text-align:right}
 /* session stopwatch */
 .sw{display:flex;align-items:center;gap:6px;flex:none}
 .swgo{height:44px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font:500 16px var(--mono);font-variant-numeric:tabular-nums;display:flex;align-items:center;gap:8px;transition:border-color .12s}
@@ -385,7 +390,7 @@ var LIFTS=["upperA","upperB","legs"];
 var WEEK=[["Mon","Upper A","upperA"],["Tue","Soccer",""],["Wed","Rest",""],["Thu","Upper B","upperB"],["Fri","Rest or walk",""],["Sat","Legs and core","legs"],["Sun","Rest",""]];
 var DAYNAME=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
 var MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-var TABS=[["lift","Lift"],["mob","Mobility"],["body","Body"],["quit","Quit"],["more","More"]];
+var TABS=[["lift","Today"],["body","Body"],["quit","Quit"],["more","More"]];
 
 /* ---------- state ---------- */
 var logs={},body={},targets={},targetsAt=0,dirty={},pick={};
@@ -551,20 +556,22 @@ function card(ex,sid,n,nx){
   var last="";
   if(prev){var ws=prev.map(function(s){return s.w}).filter(function(w){return w!=null});
     last='<p class="last">Last time '+prev.map(function(s){return s.a==null?"0":s.a}).join(" ")+(ws.length?" at "+Math.max.apply(null,ws)+" kg":"")+'</p>'}
-  return (ex.grp?'<div class="grp"><h3>'+esc(ex.grp[0])+'</h3><span>'+esc(ex.grp[1])+'</span></div>':"")+
-   '<article class="ex'+(ex.kg?"":" nokg")+(done?" done":"")+(nx===ex.id?" next":"")+'" data-ex="'+ex.id+'" data-sid="'+sid+'" data-n="'+pad(n)+'">'+
+  return    '<article class="ex'+(ex.kg?"":" nokg")+(done?" done":"")+(nx===ex.id?" next":"")+'" data-ex="'+ex.id+'" data-sid="'+sid+'" data-n="'+pad(n)+'"'+(ex.opt?' data-opt="1"':"")+'>'+
    '<div class="exhead"><div class="badge">'+(done?"&#10003;":pad(n))+'</div><div class="extitle"><div class="exh"><h3>'+esc(ex.name)+'</h3></div>'+
    '<div class="meta"><span class="goal">'+goal+'</span><span class="tag up">Up next</span>'+(ex.opt?'<span class="tag">Optional</span>':"")+'<span class="eq">'+esc(ex.eq)+'</span></div></div></div>'+
    '<div class="exbody">'+(ex.media?'<div class="demo" role="img" aria-label="'+esc(ex.name)+' demonstration" style="background-image:url(media/'+ex.id+'.jpg)"></div>':ex.video?ytTile(ex):"")+last+trendHtml(ex,sid)+(suggest(ex,sid)?'<button type="button" class="sug" data-sug="1">'+esc(suggest(ex,sid).label)+'</button>':"")+
    '<div class="sets"><div class="sethead"><span>Set</span><span class="ht">Target</span><span>Actual</span>'+(ex.kg?"<span>kg</span>":"")+'</div>'+
    sets.map(function(s,i){return setRow(ex,s,i)}).join("")+'</div>'+
    '<div class="foot">'+footHtml(ex,sets)+'</div></div></article>'}
-function routineHtml(sid){
-  var r=ROUTINES[sid],p=progress(cur,sid),nx=nextUp(sid,cur);
-  return '<section data-routine="'+sid+'"><div class="head"><div class="headrow"><h2>'+esc(r.name)+'</h2><span class="total"><span class="pct">'+p.pct+'</span>% <small>of target</small></span></div>'+
-   '<div class="big"><i style="width:'+p.pct+'%"></i></div>'+(LIFTS.indexOf(sid)>=0&&weekNo(cur)?'<span class="wk">Week '+weekNo(cur)+' of 6'+(plan[cur]&&plan[cur].from?" · moved from "+nice(plan[cur].from):"")+'</span>':"")+'</div>'+
-   (LIFTS.indexOf(sid)>=0&&deloadWeek(cur)?'<div class="nudge deload"><span><b>Deload week.</b> You worked hard for 5 weeks, you deserve to chill. Same weights, half the sets, and leave the gym wanting more.</span></div>':"")+
-   '<div class="list">'+r.ex.map(function(ex,i){return card(ex,sid,i+1,nx)}).join("")+'</div></section>'}
+function blockHtml(sid,exs,n0,title,when){
+  var lift=LIFTS.indexOf(sid)>=0,p=progress(cur,sid);
+  return '<section data-routine="'+sid+'">'+
+   (lift?'<div class="head"><div class="headrow"><h2>'+esc(title)+'</h2><span class="total"><span class="pct">'+p.pct+'</span>% <small>of target</small></span></div>'+
+     '<div class="big"><i style="width:'+p.pct+'%"></i></div>'+(weekNo(cur)?'<span class="wk">Week '+weekNo(cur)+' of 6'+(plan[cur]&&plan[cur].from?" · moved from "+nice(plan[cur].from):"")+'</span>':"")+'</div>'+
+     (deloadWeek(cur)?'<div class="nudge deload"><span><b>Deload week.</b> You worked hard for 5 weeks, you deserve to chill. Same weights, half the sets, and leave the gym wanting more.</span></div>':"")
+    :'<div class="blk"><h2>'+esc(title)+'</h2><span>'+esc(when)+'</span></div>')+
+   '<div class="list">'+exs.map(function(ex,i){return card(ex,sid,n0+i+1,"")}).join("")+'</div></section>'}
+function markNext(){var found=false;main.querySelectorAll(".ex").forEach(function(c){var on=!found&&!c.classList.contains("done")&&!c.dataset.opt;c.classList.toggle("next",on);if(on)found=true})}
 function nudgeHtml(){
   var n=0,seen={},k;for(k in logs)if((logs[k].at||0)>meta.lastBackup&&!seen[logs[k].date]){seen[logs[k].date]=1;n++}
   if(n<5||Date.now()<(meta.snooze||0))return "";
@@ -588,14 +595,19 @@ function skipHtml(sid){
    '<button type="button" class="linkbtn" id="skipcancel">Cancel</button></div></div>'}
 function skippedHtml(){var p=plan[cur];
   return '<div class="head"><div class="headrow"><h2>Skipped</h2></div></div><div class="stack"><div class="panel"><h3>'+esc(ROUTINES[p.moved].name)+(p.to?' moved to <span class="mono">'+nice(p.to)+'</span>':" skipped, not moved")+'</h3>'+
-   '<div class="btns">'+(p.to?'<button type="button" class="go" data-go="'+p.to+'">Go to that day</button>':"")+'<button type="button" class="go ghost" id="skipundo">Undo, train today</button></div></div></div>'+notesHtml()}
+   '<div class="btns">'+(p.to?'<button type="button" class="go" data-go="'+p.to+'">Go to that day</button>':"")+'<button type="button" class="go ghost" id="skipundo">Undo, train today</button></div></div></div>'}
 function liftHtml(){
   var sid=liftFor(cur),w=WEEK[dow(cur)],soc=soccerDay(cur);
   var chips='<div class="seg pick pick4">'+LIFTS.map(function(s){return '<button type="button" data-pick="'+s+'" aria-pressed="'+(!soc&&s===sid)+'">'+ROUTINES[s].name+'</button>'}).join("")+'<button type="button" data-pick="soccer" aria-pressed="'+soc+'">Soccer</button></div>';
-  if(soc)return nudgeHtml()+chips+soccerHtml()+notesHtml();
-  if(!sid&&plan[cur]&&plan[cur].moved&&!pick[cur])return nudgeHtml()+chips+skippedHtml();
-  if(!sid)return nudgeHtml()+chips+'<div class="head"><h2>'+DAYNAME[dow(cur)]+": "+esc(w[1])+'</h2></div>'+notesHtml();
-  return nudgeHtml()+chips+routineHtml(sid)+skipHtml(sid)}
+  var skipped=!sid&&plan[cur]&&plan[cur].moved&&!pick[cur],mob=ROUTINES.mob.ex,spine=mob.slice(0,5),hips=mob.slice(5),n=0;
+  var before=soc?"Before the game":sid?"Warm up, before lifting":"Any time today",after=soc?"After the game":sid?"Cool down, after lifting":"Any time today";
+  var h=nudgeHtml()+chips+blockHtml("mob",spine,n,"Spine reset",before);n+=spine.length;
+  if(soc)h+=soccerHtml();
+  else if(skipped)h+=skippedHtml();
+  else if(sid){h+=blockHtml(sid,ROUTINES[sid].ex,n,ROUTINES[sid].name,"");n+=ROUTINES[sid].ex.length}
+  h+=blockHtml("mob",hips,n,"Hips and hamstrings",after);n+=hips.length;
+  h+=blockHtml("floor",ROUTINES.floor.ex,n,"Daily","Any time today");
+  return h+(sid&&!soc?skipHtml(sid):notesHtml())}
 function bodyRows(){return Object.keys(body).map(function(k){return body[k]}).filter(function(r){return !r.deleted}).sort(function(a,b){return a.date<b.date?-1:1})}
 function chartHtml(rows){
   var pts=rows.filter(function(r){return r.weightKg!=null});
@@ -650,7 +662,7 @@ function moreHtml(){
    '<div class="panel"><h3>Your data</h3>'+
     '<div class="btns"><button type="button" class="go" id="sharebackup">Send backup to laptop</button><button type="button" class="go ghost" id="export">Save backup file</button><button type="button" class="go ghost" id="import">Restore from file</button></div>'+
     '<p class="msg'+(note&&note.bad?" bad":"")+'" id="note">'+(note?esc(note.text):"")+'</p></div>'+
-   '<div class="panel"><h3>Week</h3><dl class="sched">'+WEEK.map(function(w,i){return '<dt>'+w[0]+'</dt><dd>'+esc(w[1])+(i===1||w[2]?", then the hips and hamstrings block":"")+'</dd>'}).join("")+'</dl></div>'+
+   '<div class="panel"><h3>Week</h3><dl class="sched">'+WEEK.map(function(w,i){return '<dt>'+w[0]+'</dt><dd>'+esc(w[1])+'</dd>'}).join("")+'</dl></div>'+
   '</div>'}
 /* ---------- quit page ---------- */
 var MILES=[[20*60e3,"20 min","20 minutes","Heart rate and blood pressure drop."],[12*3600e3,"12 h","12 hours","Carbon monoxide in your blood drops to normal."],[14*864e5,"2 wk","2 to 12 weeks","Circulation improves and lung function increases."],[30*864e5,"1 mo","1 to 9 months","Coughing and shortness of breath decrease."],[365*864e5,"1 yr","1 year","Risk of coronary heart disease is about half that of a smoker."],[5*365*864e5,"5 yr","5 years","Stroke risk falls to that of a non smoker, 5 to 15 years after quitting."],[10*365*864e5,"10 yr","10 years","Lung cancer risk falls to about half that of a smoker."],[15*365*864e5,"15 yr","15 years","Risk of coronary heart disease matches a non smoker."]];
@@ -736,7 +748,8 @@ function qSave(){
 function render(){
   if(render.last!==cur+tab){skipOpen=false;render.last=cur+tab}
   renderTop();main.dataset.acc=tab;
-  main.innerHTML=tab==="lift"?liftHtml():tab==="mob"?routineHtml("mob")+routineHtml("floor"):tab==="body"?bodyHtml():tab==="quit"?quitHtml():moreHtml();
+  main.innerHTML=tab==="lift"?liftHtml():tab==="body"?bodyHtml():tab==="quit"?quitHtml():moreHtml();
+  if(tab==="lift")markNext();
   clearInterval(quitInt);quitInt=null;if(tab==="quit"){quitInt=setInterval(qTick,1000);qTick()}}
 
 /* ---------- calendar ---------- */
@@ -784,10 +797,11 @@ function refresh(cardEl,ex,sid){
   var sets=viewSets(ex,sid,cur);
   cardEl.querySelectorAll(".set").forEach(function(row,i){var s=sets[i];row.className="set"+(s.a==null?"":s.a>=s.t?" hit":" short")});
   cardEl.querySelector(".foot").innerHTML=footHtml(ex,sets);
-  var sec=cardEl.closest("section"),p=progress(cur,sid),nx=nextUp(sid,cur);
-  sec.querySelector(".pct").textContent=p.pct;sec.querySelector(".big i").style.width=p.pct+"%";
+  var sec=cardEl.closest("section"),p=progress(cur,sid),pc=sec.querySelector(".pct");
+  if(pc){pc.textContent=p.pct;sec.querySelector(".big i").style.width=p.pct+"%"}
   sec.querySelectorAll(".ex").forEach(function(c){var e=findEx(sid,c.dataset.ex),d=isDone(e,sid,cur);
-    c.classList.toggle("done",d);c.classList.toggle("next",nx===e.id);c.querySelector(".badge").textContent=d?"✓":c.dataset.n});
+    c.classList.toggle("done",d);c.querySelector(".badge").textContent=d?"✓":c.dataset.n});
+  markNext();
   var keep=document.activeElement;renderTop();if(keep&&keep.id&&$(keep.id)&&document.activeElement!==keep)$(keep.id).focus()}
 function commit(row,field,val){
   var cardEl=row.closest(".ex"),sid=cardEl.dataset.sid,ex=findEx(sid,cardEl.dataset.ex),i=+row.dataset.i;
